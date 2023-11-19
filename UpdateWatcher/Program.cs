@@ -16,12 +16,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/versions", async () =>
+app.MapGet("/versions", async (ILogger<Program> logger) =>
     {
         var config = WatcherConfig.Load();
         foreach (var item in config.Items)
         {
+            logger.LogInformation($"Getting version for {item.Name}");
             var localVersion = await item.Local.GetVersion();
+            var remoteVersion = await item.Remote.GetVersion();
         }
     })
     .WithName("GetWeatherForecast")

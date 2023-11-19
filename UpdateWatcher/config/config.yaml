@@ -6,7 +6,7 @@ items:
       processors:
         - regex: ':\s(.*)'
     remote:
-      cmd: btop
-      args: -v
+      cmd: gh
+      args: api repos/aristocratos/btop/releases/latest -q ".tag_name"
       processors:
-        - regex: ':\s(.*)'
+        - regex: 'v(.*)'
