@@ -1,0 +1,12 @@
+items:
+  - name: 'btop'
+    local:
+      cmd: btop
+      args: -v
+      processors:
+        - regex: ':\s(.*)'
+    remote:
+      cmd: btop
+      args: -v
+      processors:
+        - regex: ':\s(.*)'

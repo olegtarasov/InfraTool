@@ -1,0 +1,3 @@
+[submodule "submodules/NotLimited.Framework"]
+	path = submodules/NotLimited.Framework
+	url = git@github.com:olegtarasov/NotLimited.Framework.git

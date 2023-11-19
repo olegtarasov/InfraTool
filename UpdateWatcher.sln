@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateWatcher", "UpdateWatcher\UpdateWatcher.csproj", "{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotLimited.Framework.Common", "submodules\NotLimited.Framework\NotLimited.Framework.Common\NotLimited.Framework.Common.csproj", "{1B68D0E1-6D9C-41C7-B3C6-CC1AC2672325}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B68D0E1-6D9C-41C7-B3C6-CC1AC2672325}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B68D0E1-6D9C-41C7-B3C6-CC1AC2672325}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B68D0E1-6D9C-41C7-B3C6-CC1AC2672325}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B68D0E1-6D9C-41C7-B3C6-CC1AC2672325}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
