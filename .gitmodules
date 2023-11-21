@@ -1,3 +1,3 @@
-[submodule "submodules/NotLimited.Framework"]
-	path = submodules/NotLimited.Framework
-	url = git@github.com:olegtarasov/NotLimited.Framework.git
+[submodule "Common"]
+	path = Common
+	url = git@github.com:olegtarasov/Common.git
