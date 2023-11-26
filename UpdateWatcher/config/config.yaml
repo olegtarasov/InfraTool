@@ -17,7 +17,7 @@ items:
       cmd: docker
       args: exec vaultwarden ./vaultwarden -v
       processors:
-        - regex: '^vaultwarden\s(.*?)'
+        - regex: '^vaultwarden\s(.*)'
     remote:
       cmd: gh
       args: api repos/dani-garcia/vaultwarden/releases/latest -q ".tag_name"

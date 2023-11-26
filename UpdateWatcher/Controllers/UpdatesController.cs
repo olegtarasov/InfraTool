@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace UpdateWatcher.Controllers;
 
-public record Unit(string Name, Version Local, Version Remote);
+public enum UnitStatus {Current, Update, Error}
+
+public record Unit(string Name, UnitStatus Status, Version Local, Version Remote);
 
 [Route("/api/updates")]
 public class UpdatesController : ApiControllerBase
@@ -26,6 +28,7 @@ public class UpdatesController : ApiControllerBase
         await Parallel.ForEachAsync(config.Items, async (item, _) =>
         {
             Version? local = null, remote = null;
+            UnitStatus? status = null;
 
             try
             {
@@ -34,6 +37,7 @@ public class UpdatesController : ApiControllerBase
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to get local version for item '{Item}'", item.Name);
+                status = UnitStatus.Error;
             }
 
             try
@@ -43,9 +47,12 @@ public class UpdatesController : ApiControllerBase
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to get remote version for item '{Item}'", item.Name);
+                status = UnitStatus.Error;
             }
+
+            status ??= remote > local ? UnitStatus.Update : UnitStatus.Current;
             
-            bag.Add(new(item.Name, local ?? new(), remote ?? new()));
+            bag.Add(new(item.Name, status.Value, local ?? new(), remote ?? new()));
         });
 
         return bag.ToArray();
