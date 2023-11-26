@@ -5,7 +5,7 @@ items:
       args: version --no-color --no-prompt
       work_dir: /var/www/olegtarasov.me
       processors:
-        - regex: '^Ghost version:\s(.*?)\s.*'
+        - regex: '^Ghost version:\s(.*?)\s'
     remote:
       cmd: ghost
       args: check-update --no-prompt --no-color
@@ -55,5 +55,60 @@ items:
     remote:
       cmd: gh
       args: api repos/nextcloud/server/releases/latest -q ".tag_name"
+      processors:
+        - regex: 'v(.*)'
+  - name: 'Grafana'
+    local:
+      cmd: grafana-server
+      args: -v
+      processors:
+        - regex: '^Version\s(.*?)\s'
+    remote:
+      cmd: gh
+      args: api repos/grafana/grafana/releases/latest -q ".tag_name"
+      processors:
+        - regex: 'v(.*)'
+  - name: 'Prometheus'
+    local:
+      cmd: prometheus
+      args: --version
+      processors:
+        - regex: '^prometheus, version\s(.*?)\s'
+    remote:
+      cmd: gh
+      args: api repos/prometheus/prometheus/releases/latest -q ".tag_name"
+      processors:
+        - regex: 'v(.*)'
+  - name: 'Loki'
+    local:
+      cmd: loki
+      args: --version
+      processors:
+        - regex: '^loki, version\s(.*?)\s'
+    remote:
+      cmd: gh
+      args: api repos/grafana/loki/releases/latest -q ".tag_name"
+      processors:
+        - regex: 'v(.*)'
+  - name: 'FreshRSS'
+    local:
+      cmd: cat
+      args: constants.php
+      work_dir: /var/www/freshrss
+      processors:
+        - regex: "'FRESHRSS_VERSION', '(.*?)'"
+    remote:
+      cmd: gh
+      args: api repos/FreshRSS/FreshRSS/releases/latest -q ".tag_name"
+      processors:
+        - regex: '(.*)'
+  - name: 'Matomo'
+    local:
+      cmd: bash
+      args: -c "sudo chmod +x console && sudo -u www-data ./console core:version"
+      work_dir: /var/www/matomo
+    remote:
+      cmd: gh
+      args: api repos/matomo-org/matomo/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
