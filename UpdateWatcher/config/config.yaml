@@ -32,3 +32,16 @@ items:
       args: api repos/ttionya/vaultwarden-backup/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
+  - name: 'Mailinabox'
+    local:
+      cmd: curl
+      args: -s -X GET "https://box.olegtarasov.email/admin/system/version" -u "!secret(mib_api_login):!secret(mib_api_key)"
+      processors:
+        - replace: '$1.0.0'
+          regex: '^v(.*)'
+    remote:
+      cmd: curl
+      args: -s -X POST "https://box.olegtarasov.email/admin/system/latest-upstream-version" -u "!secret(mib_api_login):!secret(mib_api_key)"
+      processors:
+        - replace: '$1.0.0'
+          regex: '^v(.*)'

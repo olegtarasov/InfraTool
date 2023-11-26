@@ -48,7 +48,8 @@ public class WatcherConfig
             .WithTypeDiscriminatingNodeDeserializer(x =>
             {
                 x.AddUniqueKeyTypeDiscriminator<IProcessor>(
-                    ("regex", typeof(RegexProcessor)));
+                    ("regex", typeof(RegexProcessor)),
+                    ("replace", typeof(ReplaceProcessor)));
                 x.AddUniqueKeyTypeDiscriminator<IVersionRetriever>(
                     ("cmd", typeof(CmdRetriever)));
             })

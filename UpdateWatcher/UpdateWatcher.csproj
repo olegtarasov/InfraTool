@@ -34,7 +34,7 @@
     <ItemGroup>
       <None Remove="logs\**" />
       <None Update="config\config.yaml">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="config\secrets.yaml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
