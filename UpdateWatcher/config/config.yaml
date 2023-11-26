@@ -12,3 +12,23 @@ items:
       work_dir: /var/www/olegtarasov.me
       processors:
         - regex: '^Latest version:\s(.*)$'
+  - name: 'vaultwarden'
+    local:
+      cmd: docker
+      args: exec vaultwarden ./vaultwarden -v
+      processors:
+        - regex: '^vaultwarden\s(.*?)'
+    remote:
+      cmd: gh
+      args: api repos/dani-garcia/vaultwarden/releases/latest -q ".tag_name"
+  - name: 'vaultwarden-backup'
+    local:
+      cmd: bash
+      args: -c "docker inspect vaultwarden_backup | jq -r '.[0].Image' | xargs docker image inspect | jq -r '.[0].RepoTags[0]'"
+      processors:
+        - regex: 'vaultwarden-backup:(.*)'
+    remote:
+      cmd: gh
+      args: api repos/ttionya/vaultwarden-backup/releases/latest -q ".tag_name"
+      processors:
+        - regex: 'v(.*)'

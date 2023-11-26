@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 using Common.Contracts.Helpers;
 using UpdateWatcher.Processors;
 using UpdateWatcher.Retrievers;
@@ -24,7 +25,7 @@ public class WatcherConfig
             })
             .Build();
 
-        string? dir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName);
+        string? dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         if (dir.IsNullOrEmpty())
             throw new InvalidOperationException("Failed to get current directory");
         
