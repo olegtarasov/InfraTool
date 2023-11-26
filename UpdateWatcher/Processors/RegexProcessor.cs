@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
+using Common.Contracts.Helpers;
 
 namespace UpdateWatcher.Processors;
 
 public class RegexProcessor : IProcessor
 {
     public string Regex { get; set; } = string.Empty;
+    public string Replace { get; set; } = string.Empty;
     
     public bool TryParseVersion(string[] inputs, [NotNullWhen(true)] out Version? version)
     {
@@ -18,7 +20,11 @@ public class RegexProcessor : IProcessor
             if (!match.Success || match.Groups.Count < 2)
                 continue;
 
-            if (Version.TryParse(match.Groups[1].Value, out version))
+            string value = Replace.IsNullOrEmpty() 
+                ? match.Groups[1].Value 
+                : regex.Replace(input, Replace);
+            
+            if (Version.TryParse(value, out version))
                 return true;
         }
 
