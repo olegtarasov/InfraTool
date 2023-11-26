@@ -1,32 +1,44 @@
+using System.Diagnostics;
+using Common.Contracts.Helpers;
+using Common.Contrib.ServiceInstaller;
+using Common.Host.Web;
 using UpdateWatcher;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (args.Length > 0 && args[0] == "install")
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    string? fileName = Process.GetCurrentProcess().MainModule?.FileName;
+    if (fileName.IsNullOrEmpty())
+    {
+        Console.Write("Error: could not get path to the executable");
+        return 1;
+    }
+
+    var installer = new SystemDServiceInstaller(new()
+                                                {
+                                                    FileName = fileName,
+                                                    EnvironmentVariables = new []
+                                                                           {
+                                                                               "ASPNETCORE_ENVIRONMENT=Production",
+                                                                               "ASPNETCORE_URLS=http://*:5015"
+                                                                           },
+                                                    Name = "UpdateWatcher",
+                                                    DisplayName = "UpdateWatcher",
+                                                    Start = StartType.Auto
+                                                });
+
+    try
+    {
+        await installer.RegisterSystemDService();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("Error registering systemd service. Maybe sudo is missing?\n" + e);
+        return 1;
+    }
+
+    return 0;
 }
 
-app.MapGet("/versions", async (ILogger<Program> logger) =>
-    {
-        var config = WatcherConfig.Load();
-        foreach (var item in config.Items)
-        {
-            logger.LogInformation($"Getting version for {item.Name}");
-            var localVersion = await item.Local.GetVersion();
-            var remoteVersion = await item.Remote.GetVersion();
-        }
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
-
-app.Run();
+return WebApp.Create(args)
+    .AddConfigurator(new AppConfigurator())
+    .RunWithExitCode();

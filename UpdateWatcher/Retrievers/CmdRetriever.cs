@@ -1,4 +1,4 @@
-using NotLimited.Framework.Common.Helpers;
+using Common.Contrib.Helpers;
 
 namespace UpdateWatcher.Retrievers;
 
@@ -9,7 +9,9 @@ public class CmdRetriever : RetrieverBase, IVersionRetriever
 
     public override async Task<Version?> GetVersion()
     {
-        var lines = (await ProcessHelper.RunAndGetOutput(Cmd, Args, includeError: true)).Select(x => x.Text).ToArray();
+        var lines = (await ProcessHelper.RunAndGetOutput(Cmd, Args, includeError: true)).Output
+            .Select(x => x.Text).ToArray();
+        
         if (lines.Length == 0)
             return null;
         
