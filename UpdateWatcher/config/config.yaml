@@ -1,12 +1,14 @@
 items:
-  - name: 'btop'
+  - name: 'Ghost'
     local:
-      cmd: btop
-      args: -v
+      cmd: ghost
+      args: version --no-color --no-prompt
+      work_dir: /var/www/olegtarasov.me
       processors:
-        - regex: ':\s(.*)'
+        - regex: '^Ghost version:\s(.*?)\s.*'
     remote:
-      cmd: gh
-      args: api repos/aristocratos/btop/releases/latest -q ".tag_name"
+      cmd: ghost
+      args: check-update --no-prompt --no-color
+      work_dir: /var/www/olegtarasov.me
       processors:
-        - regex: 'v(.*)'
+        - regex: '^Latest version:\s(.*)$'

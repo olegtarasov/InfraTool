@@ -1,6 +1,6 @@
 @UpdateWatcher_HostAddress = http://localhost:5015
 
-GET {{UpdateWatcher_HostAddress}}/weatherforecast/
+GET {{UpdateWatcher_HostAddress}}/api/updates
 Accept: application/json
 
 ###

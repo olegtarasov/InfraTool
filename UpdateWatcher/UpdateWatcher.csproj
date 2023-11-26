@@ -20,9 +20,19 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="config\config.yaml">
-        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      </None>
+      <Compile Remove="logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="logs\**" />
     </ItemGroup>
 
 </Project>

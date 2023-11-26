@@ -4,12 +4,13 @@ namespace UpdateWatcher.Retrievers;
 
 public class CmdRetriever : RetrieverBase, IVersionRetriever
 {
-    public string Cmd { get; set; }
-    public string Args { get; set; }
+    public string Cmd { get; set; } = string.Empty;
+    public string Args { get; set; } = string.Empty;
+    public string WorkDir { get; set; } = string.Empty;
 
     public override async Task<Version?> GetVersion()
     {
-        var lines = (await ProcessHelper.RunAndGetOutput(Cmd, Args, includeError: true)).Output
+        var lines = (await ProcessHelper.RunAndGetOutput(Cmd, Args, WorkDir, true)).Output
             .Select(x => x.Text).ToArray();
         
         if (lines.Length == 0)
