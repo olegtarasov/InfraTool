@@ -49,6 +49,9 @@ public class UpdatesController : ApiControllerBase
                 _logger.LogError(e, "Failed to get remote version for item '{Item}'", item.Name);
                 status = UnitStatus.Error;
             }
+            
+            if (local == null || remote == null)
+                status = UnitStatus.Error;
 
             status ??= remote > local ? UnitStatus.Update : UnitStatus.Current;
             
