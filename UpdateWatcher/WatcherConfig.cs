@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using Common.Contracts.Helpers;
 using UpdateWatcher.Processors;
 using UpdateWatcher.Retrievers;
 using YamlDotNet.Serialization;
@@ -22,7 +24,11 @@ public class WatcherConfig
             })
             .Build();
 
-        string configPath = Path.Combine("config", "config.yaml");
+        string? dir = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule?.FileName);
+        if (dir.IsNullOrEmpty())
+            throw new InvalidOperationException("Failed to get current directory");
+        
+        string configPath = Path.Combine(dir, "config", "config.yaml");
         if (!File.Exists(configPath))
             throw new FileNotFoundException("Configuration file not found! Create config.yaml in config directory");
 

@@ -33,6 +33,9 @@
 
     <ItemGroup>
       <None Remove="logs\**" />
+      <None Update="config\config.yaml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
