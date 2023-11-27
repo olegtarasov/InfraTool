@@ -12,9 +12,9 @@ namespace UpdateWatcher;
 
 public class WatcherConfig
 {
-    private static readonly Regex _secretRegex = new(@"!secret\((.*?)\)");
-    
-    public ItemConfig[] Items { get; set; }
+    private static readonly Regex SecretRegex = new(@"!secret\((.*?)\)");
+
+    public ItemConfig[] Items { get; set; } = Array.Empty<ItemConfig>();
 
     public static WatcherConfig Load()
     {
@@ -30,13 +30,13 @@ public class WatcherConfig
         var configText = new StringBuilder(File.ReadAllText(configPath));
         
         Match match;
-        while ((match = _secretRegex.Match(configText.ToString())).Success)
+        while ((match = SecretRegex.Match(configText.ToString())).Success)
         {
             if (match.Groups.Count < 2)
                 throw new InvalidDataException("Error in secret reference!");
 
             string secretName = match.Groups[1].Value;
-            if (!secrets.TryGetValue(secretName, out string secretValue))
+            if (!secrets.TryGetValue(secretName, out string? secretValue))
                 throw new InvalidDataException($"Secret with name '{secretName}' not found in config/secrets.yaml");
 
             configText.Remove(match.Index, match.Length);
@@ -72,7 +72,7 @@ public class WatcherConfig
 
 public class ItemConfig
 {
-    public string Name { get; set; }
-    public IVersionRetriever Local { get; set; }
-    public IVersionRetriever Remote { get; set; }
+    public required string Name { get; set; }
+    public required IVersionRetriever Local { get; set; }
+    public required IVersionRetriever Remote { get; set; }
 }

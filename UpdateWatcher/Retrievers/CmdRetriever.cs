@@ -4,7 +4,7 @@ namespace UpdateWatcher.Retrievers;
 
 public class CmdRetriever : RetrieverBase, IVersionRetriever
 {
-    public string Cmd { get; set; } = string.Empty;
+    public required string Cmd { get; set; }
     public string Args { get; set; } = string.Empty;
     public string WorkDir { get; set; } = string.Empty;
 

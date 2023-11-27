@@ -6,7 +6,7 @@ namespace UpdateWatcher.Processors;
 
 public class RegexProcessor : IProcessor
 {
-    public string Regex { get; set; } = string.Empty;
+    public required string Regex { get; set; }
     public string Replace { get; set; } = string.Empty;
     
     public bool TryParseVersion(string[] inputs, [NotNullWhen(true)] out Version? version)
