@@ -96,7 +96,7 @@ items:
       args: constants.php
       work_dir: /var/www/freshrss
       processors:
-        - regex: "'FRESHRSS_VERSION', '(.*?)'"
+        - regex: "FRESHRSS_VERSION = '(.*?)'"
     remote:
       cmd: gh
       args: api repos/FreshRSS/FreshRSS/releases/latest -q ".tag_name"
