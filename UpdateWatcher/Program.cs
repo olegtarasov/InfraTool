@@ -1,44 +1,41 @@
 using System.Diagnostics;
 using Common.Contracts.Helpers;
 using Common.Contrib.ServiceInstaller;
+using Common.Host.Cli;
 using Common.Host.Web;
-using UpdateWatcher;
+using Serilog;
+using Spectre.Console.Cli;
+using UpdateWatcher.Cli;
 
-if (args.Length > 0 && args[0] == "install")
+namespace UpdateWatcher;
+
+internal class Program
 {
-    string? fileName = Process.GetCurrentProcess().MainModule?.FileName;
-    if (fileName.IsNullOrEmpty())
+    public static int Main(string[] args)
     {
-        Console.Write("Error: could not get path to the executable");
-        return 1;
+        return args.Length > 0 ? RunCommandLine(args) : RunWebApi(args);
     }
 
-    var installer = new SystemDServiceInstaller(new()
-                                                {
-                                                    FileName = fileName,
-                                                    EnvironmentVariables = new []
-                                                                           {
-                                                                               "ASPNETCORE_ENVIRONMENT=Production",
-                                                                               "ASPNETCORE_URLS=http://*:5015"
-                                                                           },
-                                                    Name = "UpdateWatcher",
-                                                    DisplayName = "UpdateWatcher",
-                                                    Start = StartType.Auto
-                                                });
-
-    try
+    private static int RunCommandLine(string[] args)
     {
-        await installer.RegisterSystemDService();
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine("Error registering systemd service. Maybe sudo is missing?\n" + e);
-        return 1;
+        return CliApp.Create(args)
+            .AddConfigurator(new CliAppConfigurator())
+            .WithCliConfiguration(config =>
+            {
+                config.AddCommand<InstallCommand>("install");
+                config.AddCommand<UninstallCommand>("uninstall");
+                config.SetExceptionHandler(e =>
+                {
+                    Log.ForContext<Program>().LogException(e);
+                });
+            })
+            .RunWithExitCode();
     }
 
-    return 0;
+    private static int RunWebApi(string[] args)
+    {
+        return WebApp.Create(args)
+            .AddConfigurator(new WebApiAppConfigurator())
+            .RunWithExitCode();
+    }
 }
-
-return WebApp.Create(args)
-    .AddConfigurator(new AppConfigurator())
-    .RunWithExitCode();

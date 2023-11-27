@@ -15,6 +15,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\submodules\Common\Common.Contrib\Common.Contrib.csproj" />
+      <ProjectReference Include="..\submodules\Common\Common.Host.Cli\Common.Host.Cli.csproj" />
       <ProjectReference Include="..\submodules\Common\Common.Host.Web\Common.Host.Web.csproj" />
       <ProjectReference Include="..\submodules\Common\Common.Host\Common.Host.csproj" />
     </ItemGroup>
