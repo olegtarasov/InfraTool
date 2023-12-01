@@ -14,6 +14,7 @@ public class WatcherConfig
 {
     private static readonly Regex SecretRegex = new(@"!secret\((.*?)\)");
 
+    public ServerConfig Server { get; set; } = new();
     public ItemConfig[] Items { get; set; } = Array.Empty<ItemConfig>();
 
     public static WatcherConfig Load()
@@ -57,6 +58,15 @@ public class WatcherConfig
         return deserializer.Deserialize<WatcherConfig>(configText.ToString());
     }
 
+    public static Dictionary<string, string> LoadSecrets()
+    {
+        string? dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        if (dir.IsNullOrEmpty())
+            throw new InvalidOperationException("Failed to get current directory");
+
+        return LoadSecrets(Path.Combine(dir, "config", "secrets.yaml"));
+    }
+    
     private static Dictionary<string, string> LoadSecrets(string fileName)
     {
         if (!File.Exists(fileName))
@@ -75,4 +85,9 @@ public class ItemConfig
     public required string Name { get; set; }
     public required IVersionRetriever Local { get; set; }
     public required IVersionRetriever Remote { get; set; }
+}
+
+public class ServerConfig
+{
+    public int Port { get; set; } = 5015;
 }
