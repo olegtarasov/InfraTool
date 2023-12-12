@@ -83,6 +83,7 @@ public class WatcherConfig
 public class ItemConfig
 {
     public required string Name { get; set; }
+    public Dictionary<string, string>? Variables { get; set; }
     public required IVersionRetriever Local { get; set; }
     public required IVersionRetriever Remote { get; set; }
 }

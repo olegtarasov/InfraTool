@@ -39,4 +39,12 @@ public class WebApiAppConfigurator : HostConfiguratorBase
         
         hostBuilder.UseUrls($"http://*:{config.Server.Port}");
     }
+
+    public override void ConfigureServices(
+        HostBuilderContext context,
+        IServiceCollection services,
+        IConfigurationContext configurationContext)
+    {
+        services.AddSingleton<VariableHolder>();
+    }
 }

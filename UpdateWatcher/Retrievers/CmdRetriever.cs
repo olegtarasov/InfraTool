@@ -1,16 +1,17 @@
 using Common.Contrib.Helpers;
+using Common.Contrib.Shell;
 
 namespace UpdateWatcher.Retrievers;
 
 public class CmdRetriever : RetrieverBase, IVersionRetriever
 {
     public required string Cmd { get; set; }
-    public string Args { get; set; } = string.Empty;
     public string WorkDir { get; set; } = string.Empty;
 
-    public override async Task<Version?> GetVersion()
+    public override async Task<Version?> GetVersion(IDictionary<string, string?>? variables)
     {
-        var lines = (await ProcessHelper.RunAndGetOutput(Cmd, Args, WorkDir, true)).Output
+        var command = new ShellCommand(Cmd, variables);
+        var lines = (await command.RunAsync(WorkDir)).Output
             .Select(x => x.Text).ToArray();
         
         if (lines.Length == 0)

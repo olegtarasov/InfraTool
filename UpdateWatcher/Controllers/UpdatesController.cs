@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Common.Contrib.Shell;
 using Common.Host.Web.Api;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,10 +13,12 @@ public record Unit(string Name, UnitStatus Status, Version Local, Version Remote
 public class UpdatesController : ApiControllerBase
 {
     private readonly ILogger<UpdatesController> _logger;
+    private readonly VariableHolder _variableHolder;
 
-    public UpdatesController(ILogger<UpdatesController> logger)
+    public UpdatesController(ILogger<UpdatesController> logger, VariableHolder variableHolder)
     {
         _logger = logger;
+        _variableHolder = variableHolder;
     }
 
     [HttpGet]
@@ -30,9 +33,35 @@ public class UpdatesController : ApiControllerBase
             Version? local = null, remote = null;
             UnitStatus? status = null;
 
+            if (item.Variables != null)
+            {
+                foreach (var varDef in item.Variables)
+                {
+                    var command = new ShellCommand(varDef.Value, _variableHolder.Variables);
+                    var (output, result) = await command.RunAsync();
+                    
+                    if (result != 0)
+                    {
+                        _logger.LogError("Variable {Variable} command exited with result code {Code}", varDef.Key, result);
+                        bag.Add(new Unit(item.Name, UnitStatus.Error, new(), new()));
+                        return;
+                    }
+
+                    string? value = output.FirstOrDefault(x => x.Type == OutputType.Output)?.Text;
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        _logger.LogError("Variable {Variable} command didn't return a value", varDef.Key);
+                        bag.Add(new Unit(item.Name, UnitStatus.Error, new(), new()));
+                        return;
+                    }
+
+                    _variableHolder.Variables[varDef.Key] = value;
+                }
+            }
+
             try
             {
-                local = await item.Local.GetVersion();
+                local = await item.Local.GetVersion(_variableHolder.Variables);
             }
             catch (Exception e)
             {
@@ -42,7 +71,7 @@ public class UpdatesController : ApiControllerBase
 
             try
             {
-                remote = await item.Remote.GetVersion();
+                remote = await item.Remote.GetVersion(_variableHolder.Variables);
             }
             catch (Exception e)
             {
