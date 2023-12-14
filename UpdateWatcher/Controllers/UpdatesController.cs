@@ -61,7 +61,7 @@ public class UpdatesController : ApiControllerBase
 
             try
             {
-                local = await item.Local.GetVersion(_variableHolder.Variables);
+                local = await GetVersion(item.Local, _variableHolder.Variables);
             }
             catch (Exception e)
             {
@@ -71,7 +71,7 @@ public class UpdatesController : ApiControllerBase
 
             try
             {
-                remote = await item.Remote.GetVersion(_variableHolder.Variables);
+                remote = await GetVersion(item.Remote, _variableHolder.Variables);
             }
             catch (Exception e)
             {
@@ -88,5 +88,27 @@ public class UpdatesController : ApiControllerBase
         });
 
         return bag.ToArray();
+    }
+
+    private async Task<Version?> GetVersion(VersionConfig item, IDictionary<string, string?>? variables)
+    {
+        var lines = await item.Retriever.GetLines(variables);
+        if (lines.Length == 0)
+            return null;
+
+        foreach (var processor in item.Processors)
+        {
+            if (processor.TryParseVersion(lines, out var version))
+                return version;
+        }
+
+        // If processors didn't find anything, just try to parse lines as they are
+        foreach (var line in lines)
+        {
+            if (Version.TryParse(line, out var version))
+                return version;
+        }
+
+        return null;
     }
 }

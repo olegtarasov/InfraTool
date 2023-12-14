@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Common.Contracts.Helpers;
 using Common.Host.Builder;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
@@ -7,23 +8,30 @@ namespace UpdateWatcher;
 
 public class WebApiAppConfigurator : HostConfiguratorBase
 {
-    public override void ConfigureSerilogCommon(LoggerConfiguration configuration, IConfigurationContext context)
+    public override void ConfigureSerilogMain(
+        LoggerConfiguration configuration,
+        HostBuilderContext hostBuilderContext,
+        IServiceProvider serviceProvider,
+        IConfigurationContext context)
     {
-        var secrets = WatcherConfig.LoadSecrets();
-        if (!secrets.ContainsKey("loki_login") || !secrets.ContainsKey("loki_password"))
+        var config = WatcherConfig.Load();
+        if (config.Server.Loki != null)
         {
-            Logger.Warning("Loki login or password are not defined in config/secrets.yaml. Skipping Loki sink");
-            return;
-        }
-
-        configuration.WriteTo.GrafanaLoki("https://loki.olegtarasov.me",
-            new LokiLabel[]
+            if (config.Server.Loki.Login.IsNullOrEmpty() || config.Server.Loki.Password.IsNullOrEmpty())
             {
-                new() { Key = "job", Value = "UpdateWatcher" },
-                new() { Key = "nodename", Value = "pretender-services" }
-            },
-            new []{"level"},
-            new LokiCredentials { Login = secrets["loki_login"], Password = secrets["loki_password"] });
+                Logger.Warning("Loki login or password are not defined in config/secrets.yaml. Skipping Loki sink");
+                return;
+            }
+
+            configuration.WriteTo.GrafanaLoki("https://loki.olegtarasov.me",
+                new LokiLabel[]
+                {
+                    new() { Key = "job", Value = "UpdateWatcher" },
+                    new() { Key = "nodename", Value = "pretender-services" }
+                },
+                new[] { "level" },
+                new LokiCredentials { Login = config.Server.Loki.Login, Password = config.Server.Loki.Password });
+        }
     }
 
     public override void ConfigureHost(IHostBuilder hostBuilder, IConfigurationContext configurationContext)

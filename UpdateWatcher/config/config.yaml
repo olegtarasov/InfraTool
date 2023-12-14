@@ -1,105 +1,134 @@
 server:
   port: 5015
+  loki:
+    login: !secret(loki_login)
+    password: !secret(loki_password)
 items:
   - name: 'Ghost'
     local:
-      cmd: ghost version --no-color --no-prompt
-      work_dir: /var/www/olegtarasov.me
+      retriever:
+        cmd: ghost version --no-color --no-prompt
+        work_dir: /var/www/olegtarasov.me
       processors:
         - regex: '^Ghost version:\s(.*?)\s'
     remote:
-      cmd: ghost check-update --no-prompt --no-color
-      work_dir: /var/www/olegtarasov.me
+      retriever:
+        cmd: ghost check-update --no-prompt --no-color
+        work_dir: /var/www/olegtarasov.me
       processors:
         - regex: '^Latest version:\s(.*)$'
   - name: 'vaultwarden'
     local:
-      cmd: docker exec vaultwarden ./vaultwarden -v
+      retriever:
+        cmd: docker exec vaultwarden ./vaultwarden -v
       processors:
         - regex: '^vaultwarden\s(.*)'
     remote:
-      cmd: gh api repos/dani-garcia/vaultwarden/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/dani-garcia/vaultwarden/releases/latest -q ".tag_name"
   - name: 'vaultwarden-backup'
     local:
-      cmd: docker inspect vaultwarden_backup | jq -r '.[0].Image' | xargs docker image inspect | jq -r '.[0].RepoTags[0]'
+      retriever:
+        cmd: docker inspect vaultwarden_backup | jq -r '.[0].Image' | xargs docker image inspect | jq -r '.[0].RepoTags[0]'
       processors:
         - regex: 'vaultwarden-backup:(.*)'
     remote:
-      cmd: gh api repos/ttionya/vaultwarden-backup/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/ttionya/vaultwarden-backup/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
   - name: 'Mailinabox'
     variables:
+      MIB_LOGIN: |
+        if [ -z "$MIB_LOGIN" ]; then
+          bw get username !secret(bw_mib_id) --session !secret(bw_session)
+        else
+          echo $MIB_LOGIN
+        fi
       MIB_TOKEN: |
-        if curl -fs -o /dev/null -X GET "https://box.olegtarasov.email/admin/system/version" -u "!secret(mib_api_login):$MIB_TOKEN"; then 
+        if curl -fs -o /dev/null -X GET "https://box.olegtarasov.email/admin/system/version" -u "$MIB_LOGIN:$MIB_TOKEN"; then 
           echo $MIB_TOKEN
         else
           PASS=$(bw get password !secret(bw_mib_id) --session !secret(bw_session))
           TOTP=$(bw get totp !secret(bw_mib_id) --session !secret(bw_session))
-          curl -s -X POST "https://box.olegtarasov.email/admin/login" -u "!secret(mib_api_login):$PASS" -H "x-auth-token: $TOTP" | jq -r ".api_key"
+          curl -s -X POST "https://box.olegtarasov.email/admin/login" -u "$MIB_LOGIN:$PASS" -H "x-auth-token: $TOTP" | jq -r ".api_key"
         fi
     local:
-      cmd: curl -s -X GET "https://box.olegtarasov.email/admin/system/version" -u "!secret(mib_api_login):$MIB_TOKEN"
+      retriever:
+        cmd: curl -s -X GET "https://box.olegtarasov.email/admin/system/version" -u "$MIB_LOGIN:$MIB_TOKEN"
       processors:
         - regex: '^v(.*)'
           replace: '$1.0.0'
     remote:
-      cmd: curl -s -X POST "https://box.olegtarasov.email/admin/system/latest-upstream-version" -u "!secret(mib_api_login):$MIB_TOKEN"
+      retriever:
+        cmd: curl -s -X POST "https://box.olegtarasov.email/admin/system/latest-upstream-version" -u "$MIB_LOGIN:$MIB_TOKEN"
       processors:
         - regex: '^v(.*)'
           replace: '$1.0.0'
   - name: 'Nextcloud'
     local:
-      cmd: sudo chmod +x occ && sudo -u www-data ./occ status
-      work_dir: /var/www/nextcloud
+      retriever:
+        cmd: sudo chmod +x occ && sudo -u www-data ./occ status
+        work_dir: /var/www/nextcloud
       processors:
         - regex: 'versionstring:\s(.*)'
     remote:
-      cmd: gh api repos/nextcloud/server/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/nextcloud/server/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
   - name: 'Grafana'
     local:
-      cmd: grafana-server -v
+      retriever:
+        cmd: grafana-server -v
       processors:
         - regex: '^Version\s(.*?)\s'
     remote:
-      cmd: gh api repos/grafana/grafana/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/grafana/grafana/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
   - name: 'Prometheus'
     local:
-      cmd: prometheus --version
+      retriever:
+        cmd: prometheus --version
       processors:
         - regex: '^prometheus, version\s(.*?)\s'
     remote:
-      cmd: gh api repos/prometheus/prometheus/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/prometheus/prometheus/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
   - name: 'Loki'
     local:
-      cmd: loki --version
+      retriever:
+        cmd: loki --version
       processors:
         - regex: '^loki, version\s(.*?)\s'
     remote:
-      cmd: gh api repos/grafana/loki/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/grafana/loki/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'
   - name: 'FreshRSS'
     local:
-      cmd: cat constants.php
-      work_dir: /var/www/freshrss
+      retriever:
+        cmd: cat constants.php
+        work_dir: /var/www/freshrss
       processors:
         - regex: "FRESHRSS_VERSION = '(.*?)'"
     remote:
-      cmd: gh api repos/FreshRSS/FreshRSS/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/FreshRSS/FreshRSS/releases/latest -q ".tag_name"
       processors:
         - regex: '(.*)'
   - name: 'Matomo'
     local:
-      cmd: sudo chmod +x console && sudo -u www-data ./console core:version
-      work_dir: /var/www/matomo
+      retriever:
+        cmd: sudo chmod +x console && sudo -u www-data ./console core:version
+        work_dir: /var/www/matomo
     remote:
-      cmd: gh api repos/matomo-org/matomo/releases/latest -q ".tag_name"
+      retriever:
+        cmd: gh api repos/matomo-org/matomo/releases/latest -q ".tag_name"
       processors:
         - regex: 'v(.*)'

@@ -50,7 +50,7 @@ public class WatcherConfig
             {
                 x.AddUniqueKeyTypeDiscriminator<IProcessor>(
                     ("regex", typeof(RegexProcessor)));
-                x.AddUniqueKeyTypeDiscriminator<IVersionRetriever>(
+                x.AddUniqueKeyTypeDiscriminator<ILinesRetriever>(
                     ("cmd", typeof(CmdRetriever)));
             })
             .Build();
@@ -84,11 +84,24 @@ public class ItemConfig
 {
     public required string Name { get; set; }
     public Dictionary<string, string>? Variables { get; set; }
-    public required IVersionRetriever Local { get; set; }
-    public required IVersionRetriever Remote { get; set; }
+    public required VersionConfig Local { get; set; }
+    public required VersionConfig Remote { get; set; }
+}
+
+public class VersionConfig
+{
+    public required ILinesRetriever Retriever { get; set; }
+    public IProcessor[] Processors { get; set; } = Array.Empty<IProcessor>();
 }
 
 public class ServerConfig
 {
     public int Port { get; set; } = 5015;
+    public LokiConfig? Loki { get; set; }
+}
+
+public class LokiConfig
+{
+    public required string Login { get; set; }
+    public required string Password { get; set; }
 }
