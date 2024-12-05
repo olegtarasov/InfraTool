@@ -4,7 +4,7 @@ server:
     login: !secret(loki_login)
     password: !secret(loki_password)
 items:
-  - name: 'Ghost'
+  - name: "Ghost"
     local:
       retriever:
         cmd: ghost version --no-color --no-prompt
@@ -17,27 +17,27 @@ items:
         work_dir: /var/www/olegtarasov.me
       processors:
         - regex: '^Latest version:\s(.*)$'
-  - name: 'vaultwarden'
+  - name: "vaultwarden"
     local:
       retriever:
         cmd: docker exec vaultwarden ./vaultwarden -v
       processors:
-        - regex: '^vaultwarden\s(.*)'
+        - regex: '^Vaultwarden\s(.*)'
     remote:
       retriever:
         cmd: gh api repos/dani-garcia/vaultwarden/releases/latest -q ".tag_name"
-  - name: 'vaultwarden-backup'
+  - name: "vaultwarden-backup"
     local:
       retriever:
         cmd: docker inspect vaultwarden_backup | jq -r '.[0].Image' | xargs docker image inspect | jq -r '.[0].RepoTags[0]'
       processors:
-        - regex: 'vaultwarden-backup:(.*)'
+        - regex: "vaultwarden-backup:(.*)"
     remote:
       retriever:
         cmd: gh api repos/ttionya/vaultwarden-backup/releases/latest -q ".tag_name"
       processors:
-        - regex: 'v(.*)'
-  - name: 'Mailinabox'
+        - regex: "v(.*)"
+  - name: "Mailinabox"
     variables:
       MIB_LOGIN: |
         if [ -z "$MIB_LOGIN" ]; then
@@ -46,7 +46,7 @@ items:
           echo $MIB_LOGIN
         fi
       MIB_TOKEN: |
-        if curl -fs -o /dev/null -X GET "https://box.olegtarasov.email/admin/system/version" -u "$MIB_LOGIN:$MIB_TOKEN"; then 
+        if curl -fs -o /dev/null -X GET "https://box.olegtarasov.email/admin/system/version" -u "$MIB_LOGIN:$MIB_TOKEN"; then
           echo $MIB_TOKEN
         else
           PASS=$(bw get password !secret(bw_mib_id) --session !secret(bw_session))
@@ -57,15 +57,15 @@ items:
       retriever:
         cmd: curl -s -X GET "https://box.olegtarasov.email/admin/system/version" -u "$MIB_LOGIN:$MIB_TOKEN"
       processors:
-        - regex: '^v(.*)'
-          replace: '$1.0.0'
+        - regex: "^v(.*)"
+          replace: "$1.0.0"
     remote:
       retriever:
         cmd: curl -s -X POST "https://box.olegtarasov.email/admin/system/latest-upstream-version" -u "$MIB_LOGIN:$MIB_TOKEN"
       processors:
-        - regex: '^v(.*)'
-          replace: '$1.0.0'
-  - name: 'Nextcloud'
+        - regex: "^v(.*)"
+          replace: "$1.0.0"
+  - name: "Nextcloud"
     local:
       retriever:
         cmd: sudo chmod +x occ && sudo -u www-data ./occ status
@@ -76,8 +76,8 @@ items:
       retriever:
         cmd: gh api repos/nextcloud/server/releases/latest -q ".tag_name"
       processors:
-        - regex: 'v(.*)'
-  - name: 'Grafana'
+        - regex: "v(.*)"
+  - name: "Grafana"
     local:
       retriever:
         cmd: grafana-server -v
@@ -87,8 +87,8 @@ items:
       retriever:
         cmd: gh api repos/grafana/grafana/releases/latest -q ".tag_name"
       processors:
-        - regex: 'v(.*)'
-  - name: 'Prometheus'
+        - regex: "v(.*)"
+  - name: "Prometheus"
     local:
       retriever:
         cmd: prometheus --version
@@ -98,8 +98,8 @@ items:
       retriever:
         cmd: gh api repos/prometheus/prometheus/releases/latest -q ".tag_name"
       processors:
-        - regex: 'v(.*)'
-  - name: 'Loki'
+        - regex: "v(.*)"
+  - name: "Loki"
     local:
       retriever:
         cmd: loki --version
@@ -109,8 +109,8 @@ items:
       retriever:
         cmd: gh api repos/grafana/loki/releases/latest -q ".tag_name"
       processors:
-        - regex: 'v(.*)'
-  - name: 'FreshRSS'
+        - regex: "v(.*)"
+  - name: "FreshRSS"
     local:
       retriever:
         cmd: cat constants.php
@@ -121,8 +121,8 @@ items:
       retriever:
         cmd: gh api repos/FreshRSS/FreshRSS/releases/latest -q ".tag_name"
       processors:
-        - regex: '(.*)'
-  - name: 'Matomo'
+        - regex: "(.*)"
+  - name: "Matomo"
     local:
       retriever:
         cmd: sudo chmod +x console && sudo -u www-data ./console core:version
@@ -131,4 +131,15 @@ items:
       retriever:
         cmd: gh api repos/matomo-org/matomo/releases/latest -q ".tag_name"
       processors:
-        - regex: 'v(.*)'
+        - regex: "v(.*)"
+  - name: "Headscale"
+    local:
+      retriever:
+        cmd: headscale version
+      processors:
+        - regex: "v(.*)"
+    remote:
+      retriever:
+        cmd: gh api repos/juanfont/headscale/releases/latest -q ".tag_name"
+      processors:
+        - regex: "v(.*)"
