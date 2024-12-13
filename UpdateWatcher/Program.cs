@@ -24,7 +24,7 @@ internal class Program
             {
                 config.AddCommand<InstallCommand>("install");
                 config.AddCommand<UninstallCommand>("uninstall");
-                config.SetExceptionHandler(e =>
+                config.SetExceptionHandler((e, _) =>
                 {
                     Log.ForContext<Program>().LogException(e);
                 });
