@@ -1,7 +1,5 @@
-using System.Diagnostics;
-using Common.Contracts.Helpers;
-using Common.Contrib.ServiceInstaller;
 using Spectre.Console.Cli;
+using SystemDServiceInstaller = InfraWatcher.ServiceInstaller.SystemDServiceInstaller;
 
 namespace InfraWatcher.Cli;
 

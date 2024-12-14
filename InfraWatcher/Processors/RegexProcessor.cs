@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using Common.Contracts.Helpers;
+using InfraWatcher.Helpers;
+
 
 namespace InfraWatcher.Processors;
 

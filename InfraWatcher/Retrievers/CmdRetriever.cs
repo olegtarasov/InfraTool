@@ -1,5 +1,4 @@
-using Common.Contrib.Helpers;
-using Common.Contrib.Shell;
+using InfraWatcher.Shell;
 
 namespace InfraWatcher.Retrievers;
 

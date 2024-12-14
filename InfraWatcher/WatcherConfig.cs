@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using Common.Contracts.Helpers;
+using InfraWatcher.Helpers;
 using InfraWatcher.Processors;
 using InfraWatcher.Retrievers;
 using YamlDotNet.Serialization;
