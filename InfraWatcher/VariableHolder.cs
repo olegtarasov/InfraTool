@@ -1,4 +1,4 @@
-namespace UpdateWatcher;
+namespace InfraWatcher;
 
 public class VariableHolder
 {

@@ -1,7 +1,7 @@
 using Common.Contrib.Helpers;
 using Common.Contrib.Shell;
 
-namespace UpdateWatcher.Retrievers;
+namespace InfraWatcher.Retrievers;
 
 public class CmdRetriever : ILinesRetriever
 {

@@ -3,7 +3,7 @@ using Common.Contrib.Shell;
 using Common.Host.Web.Api;
 using Microsoft.AspNetCore.Mvc;
 
-namespace UpdateWatcher.Controllers;
+namespace InfraWatcher.Controllers;
 
 public enum UnitStatus {Current, Update, Error}
 

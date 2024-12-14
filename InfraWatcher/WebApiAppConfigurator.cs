@@ -4,7 +4,7 @@ using Common.Host.Builder;
 using Serilog;
 using Serilog.Sinks.Grafana.Loki;
 
-namespace UpdateWatcher;
+namespace InfraWatcher;
 
 public class WebApiAppConfigurator : HostConfiguratorBase
 {
@@ -26,7 +26,7 @@ public class WebApiAppConfigurator : HostConfiguratorBase
             configuration.WriteTo.GrafanaLoki("https://loki.olegtarasov.me",
                 new LokiLabel[]
                 {
-                    new() { Key = "job", Value = "UpdateWatcher" },
+                    new() { Key = "job", Value = "InfraWatcher" },
                     new() { Key = "nodename", Value = "pretender-services" }
                 },
                 new[] { "level" },

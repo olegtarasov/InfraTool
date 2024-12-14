@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateWatcher", "UpdateWatcher\UpdateWatcher.csproj", "{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfraWatcher", "InfraWatcher\InfraWatcher.csproj", "{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{4202A3D3-B62B-4AC6-8072-644A1A3BF08D}"
 EndProject

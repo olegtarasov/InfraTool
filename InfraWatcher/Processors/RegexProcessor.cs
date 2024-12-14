@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Common.Contracts.Helpers;
 
-namespace UpdateWatcher.Processors;
+namespace InfraWatcher.Processors;
 
 public class RegexProcessor : IProcessor
 {

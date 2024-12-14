@@ -1,4 +1,4 @@
-namespace UpdateWatcher.Retrievers;
+namespace InfraWatcher.Retrievers;
 
 public interface ILinesRetriever
 {

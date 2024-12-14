@@ -1,7 +1,7 @@
 using Common.Contrib.ServiceInstaller;
 using Common.Host.Builder;
 
-namespace UpdateWatcher;
+namespace InfraWatcher;
 
 public class CliAppConfigurator : HostConfiguratorBase
 {

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace UpdateWatcher.Processors;
+namespace InfraWatcher.Processors;
 
 public interface IProcessor
 {

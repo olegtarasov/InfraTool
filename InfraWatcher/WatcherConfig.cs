@@ -3,12 +3,12 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Common.Contracts.Helpers;
-using UpdateWatcher.Processors;
-using UpdateWatcher.Retrievers;
+using InfraWatcher.Processors;
+using InfraWatcher.Retrievers;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace UpdateWatcher;
+namespace InfraWatcher;
 
 public class WatcherConfig
 {

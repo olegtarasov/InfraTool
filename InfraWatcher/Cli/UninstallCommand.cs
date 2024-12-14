@@ -1,15 +1,13 @@
-using System.Diagnostics;
-using Common.Contracts.Helpers;
 using Common.Contrib.ServiceInstaller;
 using Spectre.Console.Cli;
 
-namespace UpdateWatcher.Cli;
+namespace InfraWatcher.Cli;
 
-public class InstallCommand : SystemdCommandBase
+public class UninstallCommand : SystemdCommandBase
 {
     private readonly SystemDServiceInstaller.Factory _installerFactory;
 
-    public InstallCommand(SystemDServiceInstaller.Factory installerFactory)
+    public UninstallCommand(SystemDServiceInstaller.Factory installerFactory)
     {
         _installerFactory = installerFactory;
     }
@@ -20,7 +18,7 @@ public class InstallCommand : SystemdCommandBase
 
         try
         {
-            await installer.RegisterSystemDService();
+            await installer.DeleteSystemDService();
         }
         catch (Exception e)
         {

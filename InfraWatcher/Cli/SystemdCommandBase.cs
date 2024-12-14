@@ -3,7 +3,7 @@ using Common.Contracts.Helpers;
 using Common.Contrib.ServiceInstaller;
 using Spectre.Console.Cli;
 
-namespace UpdateWatcher.Cli;
+namespace InfraWatcher.Cli;
 
 public abstract class SystemdCommandBase : AsyncCommand
 {
@@ -23,8 +23,8 @@ public abstract class SystemdCommandBase : AsyncCommand
                                               "ASPNETCORE_ENVIRONMENT=Production",
                                               "ASPNETCORE_URLS=http://*:5015"
                                           },
-                   Name = "UpdateWatcher",
-                   DisplayName = "UpdateWatcher",
+                   Name = "InfraWatcher",
+                   DisplayName = "InfraWatcher",
                    Start = StartType.Auto
                };
     }

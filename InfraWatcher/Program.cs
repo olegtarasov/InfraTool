@@ -3,11 +3,11 @@ using Common.Contracts.Helpers;
 using Common.Contrib.ServiceInstaller;
 using Common.Host.Cli;
 using Common.Host.Web;
+using InfraWatcher.Cli;
 using Serilog;
 using Spectre.Console.Cli;
-using UpdateWatcher.Cli;
 
-namespace UpdateWatcher;
+namespace InfraWatcher;
 
 internal class Program
 {
