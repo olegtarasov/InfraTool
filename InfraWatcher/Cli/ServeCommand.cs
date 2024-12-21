@@ -5,11 +5,11 @@ namespace InfraWatcher.Cli;
 
 public class ServeCommand : AsyncCommand
 {
-    private readonly VersionWatcher _versionWatcher;
+    private readonly GroupWatcher _groupWatcher;
 
-    public ServeCommand(VersionWatcher versionWatcher)
+    public ServeCommand(GroupWatcher groupWatcher)
     {
-        _versionWatcher = versionWatcher;
+        _groupWatcher = groupWatcher;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -19,7 +19,11 @@ public class ServeCommand : AsyncCommand
         Program.RegisterServices(builder.Services);
         var app = builder.Build();
 
-        app.MapGet("/api/versions", async () => await _versionWatcher.GetVersions());
+        foreach (var group in config.Groups)
+        {
+            var local = group;
+            app.MapGet($"/api/{local.Name}", async () => await _groupWatcher.Execute(local));            
+        }
 
         await app.RunAsync($"http://localhost:{config.Server.Port}");
         

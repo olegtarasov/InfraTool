@@ -3,30 +3,36 @@ using InfraWatcher.Shell;
 
 namespace InfraWatcher;
 
-public enum UnitStatus {Current, Update, Error}
+public record Item(string Name, string Status, string? Actual, string? Expected);
 
-public record Unit(string Name, UnitStatus Status, string? Local, string? Remote);
-
-public class VersionWatcher
+public class GroupWatcher
 {
-    private readonly ILogger<VersionWatcher> _logger;
+    private const string Error = "error";
     
-    public VersionWatcher(ILogger<VersionWatcher> logger)
+    private readonly ILogger<GroupWatcher> _logger;
+    
+    public GroupWatcher(ILogger<GroupWatcher> logger)
     {
         _logger = logger;
     }
 
-    public async Task<Unit[]> GetVersions()
+    public async Task<Item[]> Execute(GroupConfig config)
     {
-        var config = WatcherConfig.Load();
-        var bag = new ConcurrentBag<Unit>();
-
+        var bag = new ConcurrentBag<Item>();
+        
         await Parallel.ForEachAsync(config.Items, async (item, _) =>
         {
-            string? local = null, remote = null;
-            UnitStatus? status = null;
+            if (item.Comparer == null && config.Comparer == null)
+            {
+                _logger.LogError("Comparer is not defined for item {Item}, and parent group also doesn't have a comparer defined", item.Name);
+                bag.Add(new Item(item.Name, Error, null, null));
+                return;
+            }
+            
+            string? actual = null, expected = null;
+            string? status = null;
             var variables = new Dictionary<string, string?>();
-
+            
             if (item.Variables != null)
             {
                 foreach (var varDef in item.Variables)
@@ -37,7 +43,7 @@ public class VersionWatcher
                     if (result != 0)
                     {
                         _logger.LogError("Variable {Variable} command exited with result code {Code}", varDef.Key, result);
-                        bag.Add(new Unit(item.Name, UnitStatus.Error, null, null));
+                        bag.Add(new Item(item.Name, Error, null, null));
                         return;
                     }
 
@@ -45,7 +51,7 @@ public class VersionWatcher
                     if (string.IsNullOrEmpty(value))
                     {
                         _logger.LogError("Variable {Variable} command didn't return a value", varDef.Key);
-                        bag.Add(new Unit(item.Name, UnitStatus.Error, null, null));
+                        bag.Add(new Item(item.Name, Error, null, null));
                         return;
                     }
 
@@ -55,42 +61,33 @@ public class VersionWatcher
 
             try
             {
-                local = await GetVersion(item.Local, variables);
+                actual = await GetValue(item.Actual, variables);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to get local version for item '{Item}'", item.Name);
-                status = UnitStatus.Error;
+                _logger.LogError(e, "Failed to get actual value for item '{Item}'", item.Name);
+                status = Error;
             }
 
             try
             {
-                remote = await GetVersion(item.Remote, variables);
+                expected = await GetValue(item.Expected, variables);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to get remote version for item '{Item}'", item.Name);
-                status = UnitStatus.Error;
+                _logger.LogError(e, "Failed to get expected value for item '{Item}'", item.Name);
+                status = Error;
             }
-            
-            if (local == null || remote == null)
-                status = UnitStatus.Error;
 
             if (status == null)
             {
-                // Try to interpret results as strict versions
-                if (Version.TryParse(local, out var localVersion)
-                    && Version.TryParse(remote, out var remoteVersion))
-                {
-                    status = remoteVersion > localVersion ? UnitStatus.Update : UnitStatus.Current;
-                }
-                else
-                {
-                    status = string.Equals(local, remote) ? UnitStatus.Current : UnitStatus.Update;
-                }
+                status = (item.Comparer
+                          ?? config.Comparer
+                          ?? throw new InvalidOperationException("Comparer is not set"))
+                    .Compare(actual, expected);
             }
 
-            bag.Add(new(item.Name, status.Value, local, remote));
+            bag.Add(new(item.Name, status, actual, expected));
         });
 
         return bag.ToArray();
@@ -106,7 +103,7 @@ public class VersionWatcher
     /// 3. If processors don't find anything, lines are parsed one by one with <see cref="Version.TryParse(System.ReadOnlySpan{char},out System.Version?)"/>.
     ///    If there is a match, that line is returned.
     /// </remarks>
-    private async Task<string?> GetVersion(VersionConfig item, IDictionary<string, string?>? variables)
+    private async Task<string?> GetValue(VersionConfig item, IDictionary<string, string?>? variables)
     {
         var lines = await item.Retriever.GetLines(variables);
         if (lines.Length == 0)

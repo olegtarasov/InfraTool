@@ -19,7 +19,7 @@ internal class Program
         var app = new CommandApp(registrar);
         app.Configure(config =>
         {
-            config.AddCommand<VersionsCommand>("versions");
+            config.AddCommand<RunCommand>("run");
             config.AddCommand<ServeCommand>("serve");
             config.AddCommand<InstallCommand>("install");
             config.AddCommand<UninstallCommand>("uninstall");
@@ -37,7 +37,7 @@ internal class Program
         services.AddSerilog(ConfigureLogger);
 
         services.AddTransient<SystemDServiceInstaller>();
-        services.AddTransient<VersionWatcher>();
+        services.AddTransient<GroupWatcher>();
     }
 
     internal static void ConfigureLogger(LoggerConfiguration config)

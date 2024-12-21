@@ -102,4 +102,6 @@ public static class StringHelpers
 
         return new string(buffer).ToLower();
     }
+
+    public static string ToSnakeCaseString<T>(this T input) => input == null ? string.Empty : input.ToString().ToSnakeCase();
 }
