@@ -1,8 +1,11 @@
 using InfraWatcher.Cli;
+using InfraWatcher.Helpers;
+using InfraWatcher.ServiceInstaller;
 using Serilog;
+using Serilog.Events;
+using Serilog.Exceptions;
+using Serilog.Sinks.SystemConsole.Themes;
 using Spectre.Console.Cli;
-using SystemDServiceInstaller = InfraWatcher.ServiceInstaller.SystemDServiceInstaller;
-using TypeRegistrar = InfraWatcher.Cli.TypeRegistrar;
 
 namespace InfraWatcher;
 
@@ -10,17 +13,14 @@ internal class Program
 {
     public static int Main(string[] args)
     {
-        return args.Length > 0 ? RunCommandLine(args) : RunWebApi(args);
-    }
-
-    private static int RunCommandLine(string[] args)
-    {
         var registrations = new ServiceCollection();
         RegisterServices(registrations);
         var registrar = new TypeRegistrar(registrations);
         var app = new CommandApp(registrar);
         app.Configure(config =>
         {
+            config.AddCommand<VersionsCommand>("versions");
+            config.AddCommand<ServeCommand>("serve");
             config.AddCommand<InstallCommand>("install");
             config.AddCommand<UninstallCommand>("uninstall");
             config.SetExceptionHandler((e, _) =>
@@ -31,17 +31,34 @@ internal class Program
         return app.Run(args);
     }
 
-    private static int RunWebApi(string[] args)
+    internal static void RegisterServices(IServiceCollection services)
     {
-        // return WebApp.Create(args)
-        //     .AddConfigurator(new WebApiAppConfigurator())
-        //     .RunWithExitCode();
-        return 0;
+        services.AddLogging();
+        services.AddSerilog(ConfigureLogger);
+
+        services.AddTransient<SystemDServiceInstaller>();
+        services.AddTransient<VersionWatcher>();
     }
 
-    private static void RegisterServices(IServiceCollection serviceCollection)
+    internal static void ConfigureLogger(LoggerConfiguration config)
     {
-        serviceCollection.AddTransient<SystemDServiceInstaller>();
-        serviceCollection.AddTransient<VersionWatcher>();
+        var level = LogEventLevel.Debug;
+        string? logLevel = Environment.GetEnvironmentVariable("LOGLEVEL");
+        if (!string.IsNullOrEmpty(logLevel))
+        {
+            if (!Enum.TryParse(logLevel, true, out level))
+                level = LogEventLevel.Debug;
+        }
+
+        // config.MinimumLevel.Is(level)
+        //     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning);
+
+        config.Enrich.FromLogContext()
+            .Enrich.WithExceptionDetails();
+
+        config.WriteTo.Console(
+            theme: ConsoleTheme.None,
+            outputTemplate: LoggingConfigurationExtensions.ConsoleTemplate,
+            standardErrorFromLevel: LogEventLevel.Warning);
     }
 }

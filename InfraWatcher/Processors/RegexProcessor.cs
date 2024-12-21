@@ -10,7 +10,7 @@ public class RegexProcessor : IProcessor
     public required string Regex { get; set; }
     public string Replace { get; set; } = string.Empty;
     
-    public bool TryParseVersion(string[] inputs, [NotNullWhen(true)] out Version? version)
+    public bool TryParseVersion(string[] inputs, [NotNullWhen(true)] out string? version)
     {
         version = null;
         
@@ -21,12 +21,11 @@ public class RegexProcessor : IProcessor
             if (!match.Success || match.Groups.Count < 2)
                 continue;
 
-            string value = Replace.IsNullOrEmpty() 
+            version = Replace.IsNullOrEmpty() 
                 ? match.Groups[1].Value 
                 : regex.Replace(input, Replace);
-            
-            if (Version.TryParse(value, out version))
-                return true;
+
+            return true;
         }
 
         return false;
