@@ -28,7 +28,7 @@ jobs:
           command: mkdir -p output
           directory: output
           filename: ../infrawatcher-${{ matrix.rid }}.zip
-          exclusions: "*.yaml *.json *.pdb"
+          exclusions: "*.yaml *.json *.pdb *.config"
       - uses: actions/upload-artifact@v4
         with:
           name: infrawatcher-${{ matrix.rid }}.zip
