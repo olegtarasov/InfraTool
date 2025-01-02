@@ -2,37 +2,36 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
 
 jobs:
   build:
     strategy:
       matrix:
         rid: [osx-arm64, osx-x64, linux-x64, linux-arm64, win-x64, win-arm64]
-    
+
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
-    - name: Create output dir
-      run: mkdir output
-    - name: Build
-      run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o output-${{ matrix.rid }}
-    - name: Archive Release
-      uses: thedoctor0/zip-release@0.7.5
-      with:
-        command: mkdir -p output
-        filename: output/infrawatcher-${{ matrix.rid }}.zip
-        path: output-${{ matrix.rid }}/
-        exclusions: '*,yaml *.json *.pdb'
-    - uses: ncipollo/release-action@v1
-      with:
-        allowUpdates: true
-        artifacts: "output/*"
-        
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Create output dir
+        run: mkdir output
+      - name: Build
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o output-${{ matrix.rid }}
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          command: mkdir -p output
+          directory: output-${{ matrix.rid }}
+          filename: ../output/infrawatcher-${{ matrix.rid }}.zip
+          exclusions: "*.yaml *.json *.pdb"
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "output/*"
