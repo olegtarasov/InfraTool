@@ -4,5 +4,5 @@ namespace InfraWatcher.Processors;
 
 public interface IProcessor
 {
-    bool TryParseVersion(string[] lines, [NotNullWhen(true)] out string? value);
+    string[] Process(string[] lines);
 }

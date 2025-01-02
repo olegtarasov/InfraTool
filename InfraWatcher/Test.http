@@ -1,0 +1,6 @@
+@host = http://localhost:5015
+
+GET {{host}}/api/versions
+Accept: application/json
+
+###

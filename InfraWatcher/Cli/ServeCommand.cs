@@ -1,3 +1,4 @@
+using InfraWatcher.Configuration;
 using Serilog;
 using Spectre.Console.Cli;
 
@@ -5,11 +6,11 @@ namespace InfraWatcher.Cli;
 
 public class ServeCommand : AsyncCommand
 {
-    private readonly GroupWatcher _groupWatcher;
+    private readonly Watcher _watcher;
 
-    public ServeCommand(GroupWatcher groupWatcher)
+    public ServeCommand(Watcher watcher)
     {
-        _groupWatcher = groupWatcher;
+        _watcher = watcher;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -22,7 +23,7 @@ public class ServeCommand : AsyncCommand
         foreach (var group in config.Groups)
         {
             var local = group;
-            app.MapGet($"/api/{local.Name}", async () => await _groupWatcher.Execute(local));            
+            app.MapGet($"/api/{local.Name}", async () => await _watcher.Execute(local));            
         }
 
         await app.RunAsync($"http://localhost:{config.Server.Port}");

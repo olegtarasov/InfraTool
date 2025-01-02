@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using InfraWatcher.Configuration;
 using Spectre.Console.Cli;
 
 namespace InfraWatcher.Cli;
@@ -13,11 +14,11 @@ public class RunSettings : CommandSettings
 
 public class RunCommand : AsyncCommand<RunSettings>
 {
-    private readonly GroupWatcher _groupWatcher;
+    private readonly Watcher _watcher;
 
-    public RunCommand(GroupWatcher groupWatcher)
+    public RunCommand(Watcher watcher)
     {
-        _groupWatcher = groupWatcher;
+        _watcher = watcher;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, RunSettings settings)
@@ -28,7 +29,7 @@ public class RunCommand : AsyncCommand<RunSettings>
         {
             throw new ArgumentException($"Group {settings.Group} not found in config");
         }
-        var result = await _groupWatcher.Execute(group);
+        var result = await _watcher.Execute(group);
         var options = new JsonSerializerOptions
                       {
                           PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower

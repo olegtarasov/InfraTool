@@ -21,6 +21,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.0" />
         <PackageReference Include="Serilog.Sinks.Grafana.Loki" Version="8.3.0" />
         <PackageReference Include="Spectre.Console.Json" Version="0.49.1" />
+        <PackageReference Include="WebDav.Client" Version="2.8.0" />
         <PackageReference Include="YamlDotNet" Version="16.2.1" />
     </ItemGroup>
 
@@ -38,10 +39,10 @@
 
     <ItemGroup>
       <None Remove="logs\**" />
-      <None Update="config\config.yaml">
+      <None Update="config.yaml">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="config\secrets.yaml">
+      <None Update="secrets.yaml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

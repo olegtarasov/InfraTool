@@ -23,10 +23,12 @@ internal class Program
             config.AddCommand<ServeCommand>("serve");
             config.AddCommand<InstallCommand>("install");
             config.AddCommand<UninstallCommand>("uninstall");
+#if !DEBUG
             config.SetExceptionHandler((e, _) =>
             {
                 Log.ForContext<Program>().Error(e, "Unhandled exception");
-            });
+            });      
+#endif
         });
         return app.Run(args);
     }
@@ -37,7 +39,7 @@ internal class Program
         services.AddSerilog(ConfigureLogger);
 
         services.AddTransient<SystemDServiceInstaller>();
-        services.AddTransient<GroupWatcher>();
+        services.AddTransient<Watcher>();
     }
 
     internal static void ConfigureLogger(LoggerConfiguration config)
