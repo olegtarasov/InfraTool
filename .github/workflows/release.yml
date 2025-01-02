@@ -23,15 +23,24 @@ jobs:
       - name: Create output dir
         run: mkdir output
       - name: Build
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o output-${{ matrix.rid }}
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o output
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
           command: mkdir -p output
-          directory: output-${{ matrix.rid }}
-          filename: ../output/infrawatcher-${{ matrix.rid }}.zip
+          directory: output
+          filename: ../infrawatcher-${{ matrix.rid }}.zip
           exclusions: "*.yaml *.json *.pdb"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: infrawatcher-${{ matrix.rid }}.zip
+          path: infrawatcher-${{ matrix.rid }}.zip
+
+  release:
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "output/*"
+          artifacts: "*"
