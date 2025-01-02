@@ -11,8 +11,6 @@ jobs:
         rid: [osx-arm64, osx-x64, linux-x64, linux-arm64, win-x64, win-arm64]
 
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -39,9 +37,12 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v4
       - uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
           artifacts: "*"
+          merge-multiple: true
