@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using InfraWatcher.Configuration;
 using InfraWatcher.Helpers;
 using InfraWatcher.ServiceInstaller;
 using Spectre.Console.Cli;
@@ -9,6 +10,7 @@ public abstract class SystemdCommandBase : AsyncCommand
 {
     protected ServiceMetadataSystemd GetServiceMetadata()
     {
+        var config = WatcherConfig.Load();
         string? fileName = Process.GetCurrentProcess().MainModule?.FileName;
         if (fileName.IsNullOrEmpty())
         {
@@ -17,11 +19,11 @@ public abstract class SystemdCommandBase : AsyncCommand
 
         return new()
                {
-                   FileName = fileName,
+                   FileName = fileName + " serve",
                    EnvironmentVariables = new[]
                                           {
                                               "ASPNETCORE_ENVIRONMENT=Production",
-                                              "ASPNETCORE_URLS=http://*:5015"
+                                              $"ASPNETCORE_URLS=http://*:{config.Server.Port}"
                                           },
                    Name = "InfraWatcher",
                    DisplayName = "InfraWatcher",
