@@ -22,7 +22,8 @@ jobs:
         run: mkdir output
       - name: Build
         run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o output
-      - run: echo ${{ runner.os }}
+      - if: "!startsWith(matrix.rid, 'win-')"
+        run: mv output/InfraWatcher output/infrawatcher
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
