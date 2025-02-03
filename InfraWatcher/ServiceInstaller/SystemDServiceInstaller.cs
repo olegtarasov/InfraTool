@@ -9,11 +9,6 @@ namespace InfraWatcher.ServiceInstaller;
 /// </summary>
 public class SystemDServiceInstaller
 {
-    /// <summary>
-    /// Factory delegate.
-    /// </summary>
-    public delegate SystemDServiceInstaller Factory(ServiceMetadataSystemd serviceMetadata);
-    
     private ILogger<SystemDServiceInstaller>? _logger;
     
     private readonly ServiceMetadataSystemd _metadata;
@@ -69,13 +64,14 @@ public class SystemDServiceInstaller
         string environment = _metadata.EnvironmentVariables.Aggregate(
             defaultEnvironment, (acc, s) => acc + "\nEnvironment=\"" + s + "\"");
         
-        var builder = new StringBuilder("[Unit]");
+        var builder = new StringBuilder("[Unit]\n");
         if (!_metadata.DisplayName.IsNullOrEmpty())
             builder.AppendLine($"Description={_metadata.DisplayName}");
 
         builder.Append("""
+                       
                        [Service]
-                       Type=notify
+                       Type=exec
                        """);
 
         if (!environment.IsNullOrEmpty())

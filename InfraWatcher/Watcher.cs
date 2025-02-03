@@ -1,11 +1,14 @@
 using System.Collections.Concurrent;
-using InfraWatcher.Comparers;
 using InfraWatcher.Configuration;
 using InfraWatcher.Shell;
 
 namespace InfraWatcher;
 
 public record Item(string Name, string Status, string? Actual, string? Expected);
+
+public record StatusItem(string Status, int Count);
+
+public record WatcherResult(Item[] Items, StatusItem[] StatusCount);
 
 public class Watcher
 {
@@ -18,7 +21,7 @@ public class Watcher
         _logger = logger;
     }
 
-    public async Task<Item[]> Execute(GroupConfig config)
+    public async Task<WatcherResult> Execute(GroupConfig config)
     {
         var bag = new ConcurrentBag<Item>();
         
@@ -104,7 +107,9 @@ public class Watcher
             bag.Add(new(item.Name, result, actual, expected));
         });
 
-        return bag.ToArray();
+        var statusCount = bag.GroupBy(x => x.Status).Select(x => new StatusItem(x.Key, x.Count())).ToArray();
+            
+        return new(bag.ToArray(), statusCount);
     }
 
     private async Task<string[]> GetValues(VersionConfig item, IDictionary<string, string?>? variables)

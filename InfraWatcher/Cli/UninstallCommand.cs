@@ -5,16 +5,16 @@ namespace InfraWatcher.Cli;
 
 public class UninstallCommand : SystemdCommandBase
 {
-    private readonly SystemDServiceInstaller.Factory _installerFactory;
-
-    public UninstallCommand(SystemDServiceInstaller.Factory installerFactory)
+    private readonly ILoggerFactory _loggerFactory;
+    
+    public UninstallCommand(ILoggerFactory loggerFactory)
     {
-        _installerFactory = installerFactory;
+        _loggerFactory = loggerFactory;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
     {
-        var installer = _installerFactory(GetServiceMetadata());
+        var installer = new SystemDServiceInstaller(GetServiceMetadata(), _loggerFactory.CreateLogger<SystemDServiceInstaller>());
 
         try
         {

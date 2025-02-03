@@ -23,12 +23,10 @@ internal class Program
             config.AddCommand<ServeCommand>("serve");
             config.AddCommand<InstallCommand>("install");
             config.AddCommand<UninstallCommand>("uninstall");
-#if !DEBUG
             config.SetExceptionHandler((e, _) =>
             {
                 Log.ForContext<Program>().Error(e, "Unhandled exception");
-            });      
-#endif
+            });
         });
         return app.Run(args);
     }

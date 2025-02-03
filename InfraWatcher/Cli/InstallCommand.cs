@@ -5,16 +5,18 @@ namespace InfraWatcher.Cli;
 
 public class InstallCommand : SystemdCommandBase
 {
-    private readonly SystemDServiceInstaller.Factory _installerFactory;
-
-    public InstallCommand(SystemDServiceInstaller.Factory installerFactory)
+    private readonly ILoggerFactory _loggerFactory;
+    //private readonly ILogger<InstallCommand> _logger;
+    
+    public InstallCommand(ILoggerFactory loggerFactory)
     {
-        _installerFactory = installerFactory;
+        _loggerFactory = loggerFactory;
+//        _logger = _loggerFactory.CreateLogger<InstallCommand>();
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
     {
-        var installer = _installerFactory(GetServiceMetadata());
+        var installer = new SystemDServiceInstaller(GetServiceMetadata(), _loggerFactory.CreateLogger<SystemDServiceInstaller>());
 
         try
         {
