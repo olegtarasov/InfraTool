@@ -24,6 +24,7 @@ internal class Program
             config.AddCommand<InstallCommand>("install");
             config.AddCommand<UninstallCommand>("uninstall");
             config.AddCommand<UpdateCommand>("update");
+            config.AddCommand<VersionCommand>("version");
             config.SetExceptionHandler((e, _) =>
             {
                 Log.ForContext<Program>().Error(e, "Unhandled exception");
