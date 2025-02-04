@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="GitHub.Octokit.SDK" Version="0.0.31" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
         <PackageReference Include="Spectre.Console" Version="0.49.1" />
         <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
@@ -32,6 +33,7 @@
 
     <ItemGroup>
       <EmbeddedResource Remove="logs\**" />
+        <EmbeddedResource Include="pat.txt" />
     </ItemGroup>
 
     <ItemGroup>

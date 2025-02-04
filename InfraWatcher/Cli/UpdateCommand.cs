@@ -35,95 +35,88 @@ public class UpdateCommand : SystemdCommandBase
         _logger.LogInformation("Github latest version: {Version}", githubVersion.Version);
         _logger.LogInformation("Local version: {Version}", localVersion);
 
-        if (githubVersion.Version > localVersion)
+        if (githubVersion.Version <= localVersion)
         {
-            string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "osx";
-            string arch = RuntimeInformation.OSArchitecture == Architecture.X64 ? "x64" : "arm64";
-            var asset = githubVersion.Assets.FirstOrDefault(x => x.Name == $"infrawatcher-{platform}-{arch}.zip");
-            if (asset == null)
-                throw new InvalidOperationException($"Can't find an asset for platform {platform} and architecture {arch}");
-            
-            string tempFile = Path.GetTempFileName();
-            _logger.LogInformation("Downloading new version from {Url} to {FileName}", asset.BrowserDownloadUrl, tempFile);
-            var client = new HttpClient();
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"https://api.github.com/repos/olegtarasov/InfraWatcher/releases/assets/{asset.Id}");
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
-                "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");
-            request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
-            request.Headers.Add("User-Agent", "olegtarasov");
-            var response = await client.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
-                throw new InvalidOperationException($"HTTP status code {response.StatusCode}");
-            
-            using (var stream = new FileStream(tempFile, FileMode.Create))
-            {
-                await response.Content.CopyToAsync(stream);
-            }
-            _logger.LogInformation("Downloaded");
-            string? fileName = Process.GetCurrentProcess().MainModule?.FileName;
-            if (fileName.IsNullOrEmpty())
-                throw new InvalidOperationException("Error: could not get path to the executable");
-            string dir = Path.GetDirectoryName(fileName) ?? "";
-            try
-            {
-                _logger.LogInformation("Deleting the old binary: {FileName}", fileName);
-                if (File.Exists(fileName))
-                    File.Delete(fileName);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Failed to delete the old binary", e);
-            }
-            try
-            {
-                _logger.LogInformation("Extracting zip file to directory: {Directory}", dir);
-                ZipFile.ExtractToDirectory(tempFile, dir);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Failed to extract zip file", e);
-            }
-            try
-            {
-                _logger.LogInformation("Cleaning up");
-                File.Delete(tempFile);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Failed to delete downloaded archive", e);
-            }
+            _logger.LogInformation("No need to update");
+            return 0;
+        }
 
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                return 0;
+        string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "osx";
+        string arch = RuntimeInformation.OSArchitecture == Architecture.X64 ? "x64" : "arm64";
+        var asset = githubVersion.Assets.FirstOrDefault(x => x.Name == $"infrawatcher-{platform}-{arch}.zip");
+        if (asset == null)
+            throw new InvalidOperationException($"Can't find an asset for platform {platform} and architecture {arch}");
             
-            var installer = new SystemDServiceInstaller(GetServiceMetadata(), _loggerFactory.CreateLogger<SystemDServiceInstaller>());
-            if (await installer.IsServiceInstalled() && await installer.IsServiceRunning())
-            {
-                _logger.LogInformation("Systemd service is installed and running, restarting");
-                return await installer.RestartService() ? 0 : 1;
-            }
+        string zipFile = await DownloadAsset(asset);
+        string? binaryFileName = Process.GetCurrentProcess().MainModule?.FileName;
+        if (binaryFileName.IsNullOrEmpty())
+            throw new InvalidOperationException("Error: could not get path to the executable");
+        string binaryDir = Path.GetDirectoryName(binaryFileName) ?? "";
+        try
+        {
+            _logger.LogInformation("Deleting the old binary: {FileName}", binaryFileName);
+            if (File.Exists(binaryFileName))
+                File.Delete(binaryFileName);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("Failed to delete the old binary", e);
+        }
+        try
+        {
+            _logger.LogInformation("Extracting zip file to directory: {Directory}", binaryDir);
+            ZipFile.ExtractToDirectory(zipFile, binaryDir);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("Failed to extract zip file", e);
+        }
+        try
+        {
+            _logger.LogInformation("Cleaning up");
+            File.Delete(zipFile);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException("Failed to delete downloaded archive", e);
+        }
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            return 0;
+            
+        var installer = new SystemDServiceInstaller(GetServiceMetadata(), _loggerFactory.CreateLogger<SystemDServiceInstaller>());
+        if (await installer.IsServiceInstalled() && await installer.IsServiceRunning())
+        {
+            _logger.LogInformation("Systemd service is installed and running, restarting");
+            return await installer.RestartService() ? 0 : 1;
         }
         
         return 0;
+    }
+
+    private async Task<string> DownloadAsset(GithubAsset asset)
+    {
+        string tempFile = Path.GetTempFileName();
+        _logger.LogInformation("Downloading new version from {Url} to {FileName}", asset.BrowserDownloadUrl, tempFile);
+        var response = await MakeGHApiRequest(
+            $"https://api.github.com/repos/olegtarasov/InfraWatcher/releases/assets/{asset.Id}",
+            "application/octet-stream");
+        
+        using (var stream = new FileStream(tempFile, FileMode.Create))
+        {
+            await response.Content.CopyToAsync(stream);
+        }
+        _logger.LogInformation("Downloaded");
+        return tempFile;
     }
 
     private static async Task<(Version Version, GithubAsset[] Assets)> GetLatestVersion()
     {
         try
         {
-            var client = new HttpClient();
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                "https://api.github.com/repos/olegtarasov/InfraWatcher/releases/latest");
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer",
-                "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");
-            request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
-            request.Headers.Add("User-Agent", "olegtarasov");
-            var response = await client.SendAsync(request);
-            if (!response.IsSuccessStatusCode)
-                throw new InvalidOperationException($"HTTP status code {response.StatusCode}");
+            var response = await MakeGHApiRequest(
+                "https://api.github.com/repos/olegtarasov/InfraWatcher/releases/latest",
+                "application/vnd.github+json");
             string text = await response.Content.ReadAsStringAsync();
             var deserialized = JsonSerializer.Deserialize<GithubVersion>(text, new JsonSerializerOptions(JsonSerializerDefaults.Web)
                 {
@@ -136,6 +129,23 @@ public class UpdateCommand : SystemdCommandBase
         {
             throw new InvalidOperationException("Failed to get latest version from Github", e);
         }
+    }
+
+    private static async Task<HttpResponseMessage> MakeGHApiRequest(string url, string mimeType)
+    {
+        var accessor = new ResourceAccessor(Assembly.GetExecutingAssembly());
+        string pat = accessor.String("pat.txt");
+        var client = new HttpClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(mimeType));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", pat);
+        request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+        request.Headers.Add("User-Agent", "olegtarasov");
+        var response = await client.SendAsync(request);
+        if (response is not { IsSuccessStatusCode: true })
+            throw new InvalidOperationException($"HTTP status code {response.StatusCode}");
+
+        return response;
     }
 
     private class GithubVersion
