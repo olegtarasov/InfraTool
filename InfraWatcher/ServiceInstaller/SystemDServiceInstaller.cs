@@ -200,8 +200,8 @@ public class SystemDServiceInstaller
             throw new PlatformNotSupportedException();
 
         var (output, exitCode) = await 
-            ProcessHelper.RunAndGetOutput(
-                $"sudo bash -c \"systemctl list-unit-files {_metadata.Name}.service &>/dev/null && echo True || echo False\"");
+            ProcessHelper.RunAndGetOutput("bash",
+                $"-c \"systemctl list-unit-files {_metadata.Name}.service &>/dev/null && echo True || echo False\"");
 
         if (exitCode != 0 || output.Length != 1 || !bool.TryParse(output[0].Text, out bool result))
         {
