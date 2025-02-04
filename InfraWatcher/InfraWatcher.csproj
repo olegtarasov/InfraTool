@@ -40,7 +40,6 @@
 
     <ItemGroup>
       <EmbeddedResource Remove="logs\**" />
-        <EmbeddedResource Include="pat.txt" />
     </ItemGroup>
 
     <ItemGroup>
@@ -49,12 +48,6 @@
 
     <ItemGroup>
       <None Remove="logs\**" />
-      <None Update="config.yaml">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="secrets.yaml">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
     </ItemGroup>
 
 </Project>

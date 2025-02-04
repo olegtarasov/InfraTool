@@ -151,13 +151,9 @@ public class UpdateCommand : SystemdCommandBase
 
     private static async Task<HttpResponseMessage> MakeGHApiRequest(string url, string mimeType)
     {
-        var accessor = new ResourceAccessor(Assembly.GetExecutingAssembly());
-        string pat = accessor.String("pat.txt");
         var client = new HttpClient();
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(mimeType));
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", pat);
-        request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
         request.Headers.Add("User-Agent", "olegtarasov");
         var response = await client.SendAsync(request);
         if (response is not { IsSuccessStatusCode: true })
