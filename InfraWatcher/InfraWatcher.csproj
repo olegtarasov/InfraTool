@@ -7,6 +7,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <LangVersion>latest</LangVersion>
         <PublishSingleFile>true</PublishSingleFile>
+        <AssemblyVersion>0.0.3</AssemblyVersion>
     </PropertyGroup>
 
     <ItemGroup>

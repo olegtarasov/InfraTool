@@ -123,23 +123,11 @@ public class SystemDServiceInstaller
     /// <returns><see cref="ValueTask"/> completed when the service is deleted.</returns>
     public async ValueTask DeleteSystemDService()
     {
-        var (output, exitCode) =
-            await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl is-active --quiet {_metadata.Name}.service\"");
-        
-        if (exitCode == 0)
+        if (await IsServiceRunning())
         {
             _logger?.LogInformation($"Service is running, executing 'systemctl stop {_metadata.Name}.service'");
-            (output, exitCode) =
-                await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl stop {_metadata.Name}.service\"");
-            
-            if (exitCode != 0)
-            {
-                _logger?.LogError($"Failed to execute systemctl stop {_metadata.Name}.service");
-                foreach (var line in output)
-                {
-                    _logger?.LogError(line);
-                }
-            }
+            if (!await StopService())
+                return;
         }
 
         _logger?.LogInformation($"Disabling service by executing 'systemctl disable {_metadata.Name}.service'");
@@ -157,7 +145,7 @@ public class SystemDServiceInstaller
         }
 
         _logger?.LogInformation("Running 'systemctl daemon-reload'");
-        (output, exitCode) = await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl daemon-reload\"");
+        var (output, exitCode) = await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl daemon-reload\"");
         if (exitCode != 0)
         {
             _logger?.LogError("Failed to execute systemctl daemon-reload");
@@ -166,5 +154,74 @@ public class SystemDServiceInstaller
                 _logger?.LogError(line);
             }
         }
+    }
+    
+    public async ValueTask<bool> RestartService()
+    {
+        var (output, exitCode) =
+            await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl restart {_metadata.Name}.service\"");
+            
+        if (exitCode != 0)
+        {
+            _logger?.LogError($"Failed to execute systemctl restart {_metadata.Name}.service");
+            foreach (var line in output)
+            {
+                _logger?.LogError(line);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public async ValueTask<bool> StopService()
+    {
+        var (output, exitCode) =
+            await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl stop {_metadata.Name}.service\"");
+            
+        if (exitCode != 0)
+        {
+            _logger?.LogError($"Failed to execute systemctl stop {_metadata.Name}.service");
+            foreach (var line in output)
+            {
+                _logger?.LogError(line);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    public async ValueTask<bool> IsServiceInstalled()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            throw new PlatformNotSupportedException();
+
+        var (output, exitCode) = await 
+            ProcessHelper.RunAndGetOutput(
+                $"sudo bash -c \"systemctl list-unit-files {_metadata.Name}.service &>/dev/null && echo True || echo False\"");
+
+        if (exitCode != 0 || output.Length != 1 || !bool.TryParse(output[0].Text, out bool result))
+        {
+            _logger?.LogError("Failed to check whether service is installed");
+            foreach (var line in output)
+            {
+                _logger?.LogError(line);
+            }
+
+            return false;
+        }
+
+        return result;
+    }
+
+    public async ValueTask<bool> IsServiceRunning()
+    {
+        var (output, exitCode) =
+            await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl is-active --quiet {_metadata.Name}.service\"");
+
+        return exitCode == 0;
     }
 }
