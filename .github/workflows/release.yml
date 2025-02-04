@@ -25,7 +25,7 @@ jobs:
       - name: Create output dir
         run: mkdir output
       - name: Build
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o output
+        run: dotnet publish InfraWatcher/InfraWatcher.csproj -c Release -r ${{ matrix.rid }} --self-contained false -o output
       - if: "!startsWith(matrix.rid, 'win-')"
         run: mv output/InfraWatcher output/infrawatcher
       - name: Archive Release

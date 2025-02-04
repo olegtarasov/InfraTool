@@ -121,7 +121,7 @@ public class UpdateCommand : SystemdCommandBase
             var deserialized = JsonSerializer.Deserialize<GithubVersion>(text, new JsonSerializerOptions(JsonSerializerDefaults.Web)
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-                });
+                }) ?? throw new InvalidOperationException("Failed to deserialize API response");
             var githubVersion = Version.Parse(deserialized.Name[1..]);
             return (githubVersion, deserialized.Assets);
         }
@@ -150,14 +150,14 @@ public class UpdateCommand : SystemdCommandBase
 
     private class GithubVersion
     {
-        public string Name { get; set; }
-        public GithubAsset[] Assets { get; set; }
+        public required string Name { get; set; }
+        public required GithubAsset[] Assets { get; set; }
     }
     
     private class GithubAsset
     {
-        public string Name { get; set; }
-        public string BrowserDownloadUrl { get; set; }
-        public long Id { get; set; }
+        public required string Name { get; set; }
+        public required string BrowserDownloadUrl { get; set; }
+        public required long Id { get; set; }
     }
 }

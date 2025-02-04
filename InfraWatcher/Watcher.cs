@@ -66,6 +66,9 @@ public class Watcher
 
             try
             {
+                if (item.Actual == null)
+                    throw new InvalidOperationException("Actual source is not configured");
+                
                 var actualValues = await GetValues(item.Actual, variables);
                 if (actualValues.Length != 1)
                 {
@@ -82,6 +85,9 @@ public class Watcher
 
             try
             {
+                if (item.Expected == null)
+                    throw new InvalidOperationException("Expected source is not configured");
+                
                 var expectedValues = await GetValues(item.Expected, variables);
                 if (expectedValues.Length != 1)
                 {
@@ -114,6 +120,9 @@ public class Watcher
 
     private async Task<string[]> GetValues(VersionConfig item, IDictionary<string, string?>? variables)
     {
+        if (item.Retriever == null)
+            throw new InvalidOperationException("Retriever is not configured");
+            
         var lines = await item.Retriever.GetLines(variables);
 
         if (item.Processors.Length == 0)
