@@ -92,7 +92,7 @@ public class UpdateCommand : SystemdCommandBase
                 return 1;
 
             _logger.LogInformation("Fixing file ownership");
-            var userName = SystemDServiceInstaller.GetCurrentUser();
+            var userName = await SystemDServiceInstaller.GetCurrentUser();
             var (output, exitCode) =
                 await ProcessHelper.RunAndGetOutput("bash", $"-c \"chown {userName}:{userName} {binaryFileName}\"");
             
