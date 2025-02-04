@@ -21,7 +21,7 @@ jobs:
       - name: Write PAT
         env:
           PAT: ${{ secrets.PAT }}
-        run: echo "$PAT" > "InfraWatcher/pat.txt"
+        run: echo -n "$PAT" > "InfraWatcher/pat.txt"
       - name: Create output dir
         run: mkdir output
       - name: Build
