@@ -90,7 +90,22 @@ public class UpdateCommand : SystemdCommandBase
             _logger.LogInformation("Systemd service is installed and running, restarting");
             if (!await installer.RestartService())
                 return 1;
-            return await installer.SetBinaryOwner() ? 0 : 1;
+
+            _logger.LogInformation("Fixing file ownership");
+            var userName = SystemDServiceInstaller.GetCurrentUser();
+            var (output, exitCode) =
+                await ProcessHelper.RunAndGetOutput("bash", $"-c \"chown {userName}:{userName} {binaryFileName}\"");
+            
+            if (exitCode != 0)
+            {
+                _logger?.LogError($"Failed to execute chown");
+                foreach (var line in output)
+                {
+                    _logger?.LogError(line);
+                }
+
+                return 1;
+            }
 
         }
         

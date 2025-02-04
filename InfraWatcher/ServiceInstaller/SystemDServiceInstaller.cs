@@ -9,8 +9,8 @@ namespace InfraWatcher.ServiceInstaller;
 /// </summary>
 public class SystemDServiceInstaller
 {
-    private ILogger<SystemDServiceInstaller>? _logger;
-    
+    private readonly ILogger<SystemDServiceInstaller>? _logger;
+
     private readonly ServiceMetadataSystemd _metadata;
 
     /// <summary>
@@ -44,19 +44,18 @@ public class SystemDServiceInstaller
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             throw new PlatformNotSupportedException();
 
+        string? curUser = null;
         if (string.IsNullOrEmpty(_metadata.User))
         {
-            var (user, _) = await ProcessHelper.RunAndGetOutput("bash", "-c logname");
-            if (user.Length != 1)
-                throw new InvalidOperationException("Failed to get current user name");
-            _metadata.User = user[0];
+            curUser = await GetCurrentUser();
+            _metadata.User = curUser;
             
             _logger?.LogInformation("User was not set explicitly, defaulting to current user {User}", _metadata.User);
         }
 
         if (string.IsNullOrEmpty(_metadata.Group))
         {
-            _metadata.Group = _metadata.User;
+            _metadata.Group = curUser ?? await GetCurrentUser();
             _logger?.LogInformation("Group was not set explicitly, defaulting to current user group {Group}", _metadata.Group);
         }
 
@@ -194,25 +193,6 @@ public class SystemDServiceInstaller
         return true;
     }
     
-    public async ValueTask<bool> SetBinaryOwner()
-    {
-        var (output, exitCode) =
-            await ProcessHelper.RunAndGetOutput("bash", $"-c \"chown {_metadata.User}:{_metadata.Group} {_metadata.FileName}\"");
-            
-        if (exitCode != 0)
-        {
-            _logger?.LogError($"Failed to execute chown");
-            foreach (var line in output)
-            {
-                _logger?.LogError(line);
-            }
-
-            return false;
-        }
-
-        return true;
-    }
-
     public async ValueTask<bool> IsServiceInstalled()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -242,5 +222,13 @@ public class SystemDServiceInstaller
             await ProcessHelper.RunAndGetOutput("bash", $"-c \"systemctl is-active --quiet {_metadata.Name}.service\"");
 
         return exitCode == 0;
+    }
+
+    public static async Task<string> GetCurrentUser()
+    {
+        var (user, _) = await ProcessHelper.RunAndGetOutput("bash", "-c logname");
+        if (user.Length != 1)
+            throw new InvalidOperationException("Failed to get current user name");
+        return user[0];
     }
 }
