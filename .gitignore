@@ -506,4 +506,5 @@ Temporary Items
 .apdisk
 
 output
-InfraWatcher/pat.txt
+InfraWatcher/config.yaml
+InfraWatcher/secrets.yaml
