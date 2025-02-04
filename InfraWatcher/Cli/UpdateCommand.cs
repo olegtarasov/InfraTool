@@ -88,7 +88,10 @@ public class UpdateCommand : SystemdCommandBase
         if (await installer.IsServiceInstalled() && await installer.IsServiceRunning())
         {
             _logger.LogInformation("Systemd service is installed and running, restarting");
-            return await installer.RestartService() ? 0 : 1;
+            if (!await installer.RestartService())
+                return 1;
+            return await installer.SetBinaryOwner() ? 0 : 1;
+
         }
         
         return 0;

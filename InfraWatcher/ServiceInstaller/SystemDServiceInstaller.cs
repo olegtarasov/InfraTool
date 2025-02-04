@@ -193,6 +193,25 @@ public class SystemDServiceInstaller
 
         return true;
     }
+    
+    public async ValueTask<bool> SetBinaryOwner()
+    {
+        var (output, exitCode) =
+            await ProcessHelper.RunAndGetOutput("bash", $"-c \"chown {_metadata.User}:{_metadata.Group} {_metadata.FileName}\"");
+            
+        if (exitCode != 0)
+        {
+            _logger?.LogError($"Failed to execute chown");
+            foreach (var line in output)
+            {
+                _logger?.LogError(line);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 
     public async ValueTask<bool> IsServiceInstalled()
     {
