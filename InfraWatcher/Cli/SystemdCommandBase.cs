@@ -20,6 +20,7 @@ public abstract class SystemdCommandBase : AsyncCommand
         return new()
                {
                    FileName = fileName + " serve",
+                   WorkingDirectory = AppContext.BaseDirectory,
                    EnvironmentVariables = new[]
                                           {
                                               "ASPNETCORE_ENVIRONMENT=Production",

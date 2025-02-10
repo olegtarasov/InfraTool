@@ -11,6 +11,11 @@ public abstract class ServiceMetadata
     public required string FileName { get; set; }
 
     /// <summary>
+    /// Working directory (optional).
+    /// </summary>
+    public string? WorkingDirectory { get; set; }
+
+    /// <summary>
     /// Gets or sets the system strong name for the service.
     /// </summary>
     public required string Name { get; set; }

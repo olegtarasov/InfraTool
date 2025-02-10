@@ -76,8 +76,11 @@ public class SystemDServiceInstaller
         if (!environment.IsNullOrEmpty())
             builder.AppendLine(environment);
 
+        builder.AppendLine($"ExecStart={_metadata.FileName}");
+        if (!_metadata.WorkingDirectory.IsNullOrEmpty())
+            builder.AppendLine($"WorkingDirectory={_metadata.WorkingDirectory}");
+        
         builder.Append($"""
-                        ExecStart={_metadata.FileName}
                         User={_metadata.User}
                         Group={_metadata.Group}
                         
