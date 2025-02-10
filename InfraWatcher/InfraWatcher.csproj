@@ -7,7 +7,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <LangVersion>latest</LangVersion>
         <PublishSingleFile>true</PublishSingleFile>
-        <AssemblyVersion>0.2.0</AssemblyVersion>
+        <AssemblyVersion>0.2.2</AssemblyVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -20,6 +20,7 @@
 
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="JsonPath.Net" Version="2.1.1" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
         <PackageReference Include="Spectre.Console" Version="0.49.1" />
         <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />

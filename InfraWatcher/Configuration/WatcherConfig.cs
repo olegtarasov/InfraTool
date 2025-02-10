@@ -53,7 +53,9 @@ public class WatcherConfig
                 x.AddKeyValueTypeDiscriminator<ILinesRetriever>("type",
                     ("cmd", typeof(CommandRetriever)),
                     ("webdav_list", typeof(WebDavFileListRetriever)),
-                    ("cur_time", typeof(CurTimeRetriever)));
+                    ("cur_time", typeof(CurTimeRetriever)),
+                    ("gh_release", typeof(GithubReleaseRetriever)),
+                    ("var", typeof(VariableRetriever)));
                 x.AddKeyValueTypeDiscriminator<IProcessor>("type",
                     ("regex", typeof(RegexProcessor)),
                     ("date", typeof(DateProcessor)));
