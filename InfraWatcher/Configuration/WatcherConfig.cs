@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using InfraWatcher.Comparers;
@@ -11,6 +12,9 @@ namespace InfraWatcher.Configuration;
 
 public class WatcherConfig
 {
+    private const string ConfigFileName = "config.yaml";
+    private const string SecretsFileName = "secrets.yaml";
+    
     private static readonly Regex SecretRegex = new(@"!secret\((.*?)\)");
 
     public ServerConfig Server { get; set; } = new();
@@ -18,15 +22,11 @@ public class WatcherConfig
 
     public static WatcherConfig Load()
     {
-        if (AppContext.BaseDirectory.IsNullOrEmpty())
-            throw new InvalidOperationException("Failed to get current directory");
-
-        string configPath = Path.Combine(AppContext.BaseDirectory, "config.yaml");
-        if (!File.Exists(configPath))
+        if (!File.Exists(ConfigFileName))
             throw new FileNotFoundException("Configuration file not found! Create config.yaml in config directory");
 
-        var secrets = LoadSecrets(Path.Combine(AppContext.BaseDirectory, "secrets.yaml"));
-        var configText = new StringBuilder(File.ReadAllText(configPath));
+        var secrets = LoadSecrets(SecretsFileName);
+        var configText = new StringBuilder(File.ReadAllText(ConfigFileName));
         
         Match match;
         while ((match = SecretRegex.Match(configText.ToString())).Success)
@@ -43,19 +43,22 @@ public class WatcherConfig
         }
         
         var deserializer = new DeserializerBuilder()
+            .IgnoreUnmatchedProperties()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .WithNodeDeserializer(new RetrieverDeserializer()) // Try to deserialize comparer in simple form (retriever: cur_time)
             .WithNodeDeserializer(new ComparerDeserializer()) // Try to deserialize comparer in simple form (comparer: version)
             .WithNodeDeserializer(new TimeSpanDeserializer())
             .WithTypeDiscriminatingNodeDeserializer(x =>
             {
-                x.AddUniqueKeyTypeDiscriminator<IProcessor>(
+                x.AddKeyValueTypeDiscriminator<ILinesRetriever>("type",
+                    ("cmd", typeof(CommandRetriever)),
+                    ("webdav_list", typeof(WebDavFileListRetriever)),
+                    ("cur_time", typeof(CurTimeRetriever)));
+                x.AddKeyValueTypeDiscriminator<IProcessor>("type",
                     ("regex", typeof(RegexProcessor)),
-                    ("date_format", typeof(DateSelector)));
-                x.AddUniqueKeyTypeDiscriminator<ILinesRetriever>(
-                    ("command", typeof(CommandRetriever)),
-                    ("webdav", typeof(WebDavFileListRetriever)));
-                x.AddUniqueKeyTypeDiscriminator<IComparer>( // Try to deserealize comparer in complex form (as mapping)
+                    ("date", typeof(DateProcessor)));
+                x.AddKeyValueTypeDiscriminator<IComparer>("type",
+                    ("version", typeof(VersionComparer)),
                     ("max_delta", typeof(MaxDeltaComparer)));
             })
             .Build();

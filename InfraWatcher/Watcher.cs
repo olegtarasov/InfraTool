@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using InfraWatcher.Configuration;
+using InfraWatcher.Helpers;
 using InfraWatcher.Shell;
 
 namespace InfraWatcher;
@@ -24,7 +25,8 @@ public class Watcher
     public async Task<WatcherResult> Execute(GroupConfig config)
     {
         var bag = new ConcurrentBag<Item>();
-        
+
+        var groupVars = await GetVariables(config.Variables);
         await Parallel.ForEachAsync(config.Items, async (item, _) =>
         {
             if (!ValidateItemConfig(config, item))
@@ -36,32 +38,15 @@ public class Watcher
             string? actual = null;
             string? expected = null;
             string? result = null;
-            var variables = new Dictionary<string, string?>();
+            var variables = new Dictionary<string, string>(groupVars);
             
             if (item.Variables != null)
             {
-                foreach (var varDef in item.Variables)
-                {
-                    var command = new ShellCommand(varDef.Value, variables);
-                    var (output, varResult) = await command.RunAsync();
-                    
-                    if (varResult != 0)
-                    {
-                        _logger.LogError("Variable {Variable} command exited with result code {Code}", varDef.Key, varResult);
-                        bag.Add(new Item(item.Name, Error, null, null));
-                        return;
-                    }
-
-                    string? value = output.FirstOrDefault(x => x.Type == OutputType.Output)?.Text;
-                    if (string.IsNullOrEmpty(value))
-                    {
-                        _logger.LogError("Variable {Variable} command didn't return a value", varDef.Key);
-                        bag.Add(new Item(item.Name, Error, null, null));
-                        return;
-                    }
-
-                    variables[varDef.Key] = value;
-                }
+                var itemVars = await GetVariables(item.Variables);
+                
+                // Item vars override group vars
+                foreach (var itemVar in itemVars)
+                    variables[itemVar.Key] = itemVar.Value;
             }
 
             try
@@ -118,7 +103,34 @@ public class Watcher
         return new(bag.ToArray(), statusCount);
     }
 
-    private async Task<string[]> GetValues(VersionConfig item, IDictionary<string, string?>? variables)
+    private async Task<Dictionary<string, string>> GetVariables(Dictionary<string, InputConfig>? definitions)
+    {
+        var result = new Dictionary<string, string>();
+        if (definitions == null)
+            return result;
+        foreach (var definition in definitions)
+        {
+            try
+            {
+                var values = await GetValues(definition.Value, result);
+                if (values.Length == 0)
+                {
+                    result[definition.Key] = string.Empty;
+                    continue;
+                }
+
+                result[definition.Key] = values.Length == 1 ? values[0] : values.Aggregate((s, s1) => s + Environment.NewLine + s1);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to get value for variable {Name}", definition.Key);
+            }
+        }
+
+        return result;
+    }
+
+    private async Task<string[]> GetValues(InputConfig item, IDictionary<string, string>? variables)
     {
         if (item.Retriever == null)
             throw new InvalidOperationException("Retriever is not configured");

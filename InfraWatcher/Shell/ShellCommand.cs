@@ -9,12 +9,12 @@ namespace InfraWatcher.Shell;
 public class ShellCommand
 {
     private readonly List<string> _commands = new();
-    private readonly IDictionary<string, string?>? _environmentVariables;
+    private readonly IDictionary<string, string>? _environmentVariables;
     
     /// <summary>
     /// Ctor.
     /// </summary>
-    public ShellCommand(string command, IDictionary<string, string?>? environmentVariables = null)
+    public ShellCommand(string command, IDictionary<string, string>? environmentVariables = null)
     {
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsWindows())
             throw new NotSupportedException("Only Lunux, MacOS and Windows are supported!");
@@ -92,7 +92,7 @@ public class ShellCommand
 
         if (_environmentVariables != null)
         {
-            info.Environment.AddRange(_environmentVariables);
+            info.Environment!.AddRange(_environmentVariables);
         }
         
         var process = new Process{ StartInfo = info };

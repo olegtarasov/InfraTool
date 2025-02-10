@@ -7,7 +7,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <LangVersion>latest</LangVersion>
         <PublishSingleFile>true</PublishSingleFile>
-        <AssemblyVersion>0.1.0</AssemblyVersion>
+        <AssemblyVersion>0.2.0</AssemblyVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

@@ -5,27 +5,39 @@ using InfraWatcher.Helpers;
 
 namespace InfraWatcher.Processors;
 
-public class RegexProcessor : IProcessor
+public class RegexProcessor : ProcessorBase
 {
-    public required string Regex { get; set; }
+    public required string Expr { get; set; }
     public string Replace { get; set; } = string.Empty;
     
-    public string[] Process(string[] lines)
+    public override string[] Process(string[] lines)
     {
         var result = new List<string>();
         
-        var regex = new Regex(Regex);
+        var regex = new Regex(Expr);
         foreach (string line in lines)
         {
             var match = regex.Match(line);
-            if (!match.Success || match.Groups.Count < 2)
+            if (!match.Success)
                 continue;
 
-            result.Add(Replace.IsNullOrEmpty()
-                ? match.Groups[1].Value
-                : regex.Replace(line, Replace));
+            if (!Replace.IsNullOrEmpty())
+            {
+                result.Add(regex.Replace(line, Replace));
+                continue;
+            }
+
+            if (match.Groups.Count > 1)
+            {
+                for (int i = 1; i < match.Groups.Count; i++)
+                    result.Add(match.Groups[i].Value);
+            }
+            else
+            {
+                result.Add(match.Value);
+            }
         }
 
-        return result.ToArray();
+        return ApplyFilters(result).ToArray();
     }
 }

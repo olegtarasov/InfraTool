@@ -11,8 +11,11 @@ public static class DictionaryExtensions
     /// </summary>
     public static void AddRange<TKey, TValue>(
         this IDictionary<TKey, TValue> dictionary,
-        IDictionary<TKey, TValue> source)
+        IDictionary<TKey, TValue>? source)
     {
+        if (source == null)
+            return;
+        
         foreach (var pair in source)
         {
             dictionary[pair.Key] = pair.Value;

@@ -2,5 +2,5 @@ namespace InfraWatcher.Retrievers;
 
 public interface ILinesRetriever
 {
-    Task<string[]> GetLines(IDictionary<string, string?>? variables);
+    Task<string[]> GetLines(IDictionary<string, string>? variables);
 }
