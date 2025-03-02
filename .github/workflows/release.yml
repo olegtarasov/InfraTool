@@ -21,20 +21,20 @@ jobs:
       - name: Create output dir
         run: mkdir output
       - name: Build
-        run: dotnet publish InfraWatcher/InfraWatcher.csproj -c Release -r ${{ matrix.rid }} --self-contained false -o output
+        run: dotnet publish InfraTool/InfraTool.csproj -c Release -r ${{ matrix.rid }} --self-contained false -o output
       - if: "!startsWith(matrix.rid, 'win-')"
-        run: mv output/InfraWatcher output/infrawatcher
+        run: mv output/InfraTool output/infratool
       - name: Archive Release
         uses: thedoctor0/zip-release@0.7.5
         with:
           command: mkdir -p output
           directory: output
-          filename: ../infrawatcher-${{ matrix.rid }}.zip
+          filename: ../infratool-${{ matrix.rid }}.zip
           exclusions: "*.yaml *.json *.pdb *.config"
       - uses: actions/upload-artifact@v4
         with:
-          name: infrawatcher-${{ matrix.rid }}.zip
-          path: infrawatcher-${{ matrix.rid }}.zip
+          name: infratool-${{ matrix.rid }}.zip
+          path: infratool-${{ matrix.rid }}.zip
 
   release:
     needs: build

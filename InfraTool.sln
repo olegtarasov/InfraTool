@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfraTool", "InfraTool\InfraTool.csproj", "{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{C4024154-90B8-488B-AEC2-5B6CEB5A1E2B}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\release.yml = .github\workflows\release.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA61E743-4D13-4DEB-B58D-FD637C26AC8D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal
