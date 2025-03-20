@@ -43,7 +43,7 @@ public class UpdateCommand : SystemdCommandBase
 
         string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "osx";
         string arch = RuntimeInformation.OSArchitecture == Architecture.X64 ? "x64" : "arm64";
-        var asset = githubVersion.Assets.FirstOrDefault(x => x.Name == $"infrawatcher-{platform}-{arch}.zip");
+        var asset = githubVersion.Assets.FirstOrDefault(x => x.Name == $"infratool-{platform}-{arch}.zip");
         if (asset == null)
             throw new InvalidOperationException($"Can't find an asset for platform {platform} and architecture {arch}");
             

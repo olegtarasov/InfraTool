@@ -26,8 +26,8 @@ public abstract class SystemdCommandBase : AsyncCommand
                                               "ASPNETCORE_ENVIRONMENT=Production",
                                               $"ASPNETCORE_URLS=http://*:{config.Server.Port}"
                                           },
-                   Name = "infrawatcher",
-                   DisplayName = "infrawatcher",
+                   Name = "infratool",
+                   DisplayName = "infratool",
                    Start = StartType.Auto
                };
     }

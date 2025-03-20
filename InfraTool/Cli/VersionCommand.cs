@@ -9,7 +9,7 @@ public class VersionCommand : AsyncCommand
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version
             ?? throw new InvalidOperationException("Failed to get version");
-        Console.WriteLine($"infrawatcher v{version.Major}.{version.Minor}.{version.Build}");
+        Console.WriteLine($"infratool v{version.Major}.{version.Minor}.{version.Build}");
         return Task.FromResult(0);
     }
 }
