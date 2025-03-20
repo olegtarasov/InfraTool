@@ -506,5 +506,5 @@ Temporary Items
 .apdisk
 
 output
-InfraWatcher/config.yaml
-InfraWatcher/secrets.yaml
+InfraTool/config.yaml
+InfraTool/secrets.yaml

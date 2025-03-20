@@ -55,6 +55,7 @@ public class WatcherConfig
                     ("webdav_list", typeof(WebDavFileListRetriever)),
                     ("cur_time", typeof(CurTimeRetriever)),
                     ("gh_release", typeof(GithubReleaseRetriever)),
+                    ("gh_tag", typeof(GithubTagRetriever)),
                     ("var", typeof(VariableRetriever)));
                 x.AddKeyValueTypeDiscriminator<IProcessor>("type",
                     ("regex", typeof(RegexProcessor)),
