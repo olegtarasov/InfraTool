@@ -157,7 +157,10 @@ public class UpdateCommand : SystemdCommandBase
         request.Headers.Add("User-Agent", "olegtarasov");
         var response = await client.SendAsync(request);
         if (response is not { IsSuccessStatusCode: true })
-            throw new InvalidOperationException($"HTTP status code {response.StatusCode}");
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"HTTP status code {response.StatusCode}. Response:\n{errorContent}");
+        }
 
         return response;
     }

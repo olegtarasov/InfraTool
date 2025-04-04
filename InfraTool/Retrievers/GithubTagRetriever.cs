@@ -20,10 +20,13 @@ public class GithubTagRetriever : ILinesRetriever
         var client = new HttpClient();
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        request.Headers.Add("User-Agent", "curl/8.7.1");
+        request.Headers.Add("User-Agent", "olegtarasov");
         var response = await client.SendAsync(request);
         if (response is not { IsSuccessStatusCode: true })
-            throw new InvalidOperationException($"HTTP status code {response.StatusCode}");
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"HTTP status code {response.StatusCode}. Response:\n{errorContent}");
+        }
 
         //string content = await response.Content.ReadAsStringAsync(); 
         var json = await response.Content.ReadFromJsonAsync<JsonArray>();

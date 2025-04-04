@@ -22,10 +22,13 @@ public class GithubReleaseRetriever : ILinesRetriever
         var client = new HttpClient();
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        request.Headers.Add("User-Agent", "curl/8.7.1");
+        request.Headers.Add("User-Agent", "olegtarasov");
         var response = await client.SendAsync(request);
         if (response is not { IsSuccessStatusCode: true })
-            throw new InvalidOperationException($"HTTP status code {response.StatusCode}");
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"HTTP status code {response.StatusCode}. Response:\n{errorContent}");
+        }
 
         var json = await response.Content.ReadFromJsonAsync<JsonObject>();
         var result = path.Evaluate(json).Matches.Select(x => x.Value?.ToString()).Where(x => x != null).ToArray();
