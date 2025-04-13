@@ -8,10 +8,12 @@ namespace InfraTool.Cli;
 public class ServeCommand : AsyncCommand
 {
     private readonly ComparisonEngine _comparisonEngine;
+    private readonly ScriptEngine _scriptEngine;
 
-    public ServeCommand(ComparisonEngine comparisonEngine)
+    public ServeCommand(ComparisonEngine comparisonEngine, ScriptEngine scriptEngine)
     {
         _comparisonEngine = comparisonEngine;
+        _scriptEngine = scriptEngine;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -32,10 +34,25 @@ public class ServeCommand : AsyncCommand
                 var group = localConfig.Comparisons.FirstOrDefault(x => x.Name == comparisonName);
                 if (group == null)
                 {
-                    throw new BadHttpRequestException($"Group not found: {comparisonName}");
+                    throw new BadHttpRequestException($"Comparison not found: {comparisonName}");
                 }
                 return await _comparisonEngine.Execute(group);
             });            
+        }
+
+        foreach (var scriptName in config.Scripts.Select(x => x.Name).ToArray())
+        {
+            app.MapGet($"/api/{scriptName}", async () =>
+            {
+                var localConfig = WatcherConfig.Load();
+                var script = localConfig.Scripts.FirstOrDefault(x => x.Name == scriptName);
+                if (script == null)
+                {
+                    throw new BadHttpRequestException($"Script not found: {scriptName}");
+                }
+                
+                return await _scriptEngine.Execute(script);
+            });
         }
 
         await app.RunAsync($"http://localhost:{config.Server.Port}");

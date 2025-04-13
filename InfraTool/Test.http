@@ -4,3 +4,8 @@ GET {{host}}/api/versions
 Accept: application/json
 
 ###
+
+GET {{host}}/api/foo
+Accept: application/json
+
+###
