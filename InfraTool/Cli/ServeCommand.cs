@@ -55,7 +55,9 @@ public class ServeCommand : AsyncCommand
             });
         }
 
-        await app.RunAsync($"http://localhost:{config.Server.Port}");
+        string host = string.IsNullOrEmpty(config.Server.Host) ? "localhost" : config.Server.Host;
+
+        await app.RunAsync($"http://{host}:{config.Server.Port}");
         
         return 0;
     }
