@@ -39,7 +39,8 @@ internal class Program
         services.AddSerilog(ConfigureLogger);
 
         services.AddTransient<SystemDServiceInstaller>();
-        services.AddTransient<Watcher>();
+        services.AddTransient<ComparisonEngine>();
+        services.AddTransient<ScriptEngine>();
     }
 
     internal static void ConfigureLogger(LoggerConfiguration config)

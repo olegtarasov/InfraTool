@@ -7,36 +7,59 @@ namespace InfraTool.Cli;
 
 public class RunSettings : CommandSettings
 {
-    [CommandArgument(0, "<GROUP>")]
-    public string Group { get; set; } = string.Empty;
+    [CommandArgument(0, "<NAME>")]
+    public string Name { get; set; } = string.Empty;
 }
 
 
 public class RunCommand : AsyncCommand<RunSettings>
 {
-    private readonly Watcher _watcher;
+    private readonly ComparisonEngine _comparisonEngine;
+    private readonly ScriptEngine _scriptEngine;
 
-    public RunCommand(Watcher watcher)
+    public RunCommand(ComparisonEngine comparisonEngine, ScriptEngine scriptEngine)
     {
-        _watcher = watcher;
+        _comparisonEngine = comparisonEngine;
+        _scriptEngine = scriptEngine;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, RunSettings settings)
     {
         var config = WatcherConfig.Load();
-        var group = config.Groups.FirstOrDefault(x => x.Name == settings.Group);
-        if (group == null)
+        var comparison = config.Comparisons.FirstOrDefault(x => x.Name == settings.Name);
+        if (comparison == null)
         {
-            throw new ArgumentException($"Group {settings.Group} not found in config");
+            var script = config.Scripts.FirstOrDefault(x => x.Name == settings.Name);
+            if (script == null)
+                throw new ArgumentException($"{settings.Name} not found in config");
+
+            await RunScript(script);
         }
-        var result = await _watcher.Execute(group);
+        else
+        {
+            await RunComparison(comparison);
+        }
+        
+        return 0;
+    }
+
+    private async Task RunScript(ScriptConfig script)
+    {
+        var scriptResult = await _scriptEngine.Execute(script);
+        foreach (string line in scriptResult)
+        {
+            Console.WriteLine(line);
+        }
+    }
+
+    private async Task RunComparison(ComparisonConfig comparison)
+    {
+        var result = await _comparisonEngine.Execute(comparison);
         var options = new JsonSerializerOptions
                       {
                           PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                       };
         options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower));
         Console.WriteLine(JsonSerializer.Serialize(result, options));
-
-        return 0;
     }
 }

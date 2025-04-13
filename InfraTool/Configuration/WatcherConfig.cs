@@ -18,7 +18,8 @@ public class WatcherConfig
     private static readonly Regex SecretRegex = new(@"!secret\((.*?)\)");
 
     public ServerConfig Server { get; set; } = new();
-    public GroupConfig[] Groups { get; set; } = [];
+    public ComparisonConfig[] Comparisons { get; set; } = [];
+    public ScriptConfig[] Scripts { get; set; } = [];
 
     public static WatcherConfig Load()
     {
@@ -66,7 +67,9 @@ public class WatcherConfig
             })
             .Build();
 
-        return deserializer.Deserialize<WatcherConfig>(configText.ToString());
+        var config = deserializer.Deserialize<WatcherConfig>(configText.ToString());
+        ValidateConfig(config);
+        return config;
     }
 
     private static Dictionary<string, string> LoadSecrets(string fileName)
@@ -79,5 +82,15 @@ public class WatcherConfig
             .Build();
 
         return deserializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(fileName));
+    }
+
+    private static void ValidateConfig(WatcherConfig config)
+    {
+        var existing = new HashSet<string>();
+        foreach (var name in config.Comparisons.Select(x => x.Name).Concat(config.Scripts.Select(x => x.Name)))
+        {
+            if (!existing.Add(name))
+                throw new InvalidDataException($"Comparison and script names must be unique. Offending name: {name}");
+        }
     }
 }

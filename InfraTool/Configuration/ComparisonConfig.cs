@@ -2,7 +2,7 @@ using InfraTool.Comparers;
 
 namespace InfraTool.Configuration;
 
-public class GroupConfig
+public class ComparisonConfig
 {
     public required string Name { get; set; }
     public ItemConfig[] Items { get; set; } = [];

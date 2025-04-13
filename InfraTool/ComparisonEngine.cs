@@ -1,37 +1,35 @@
 using System.Collections.Concurrent;
 using InfraTool.Configuration;
-using InfraTool.Helpers;
-using InfraTool.Shell;
 
 namespace InfraTool;
 
-public record Item(string Name, string Status, string? Actual, string? Expected);
+public record ComparisonItem(string Name, string Status, string? Actual, string? Expected);
 
 public record StatusItem(string Status, int Count);
 
-public record WatcherResult(Item[] Items, StatusItem[] StatusCount);
+public record ComparisonResult(ComparisonItem[] Items, StatusItem[] StatusCount);
 
-public class Watcher
+public class ComparisonEngine
 {
     private const string Error = "error";
     
-    private readonly ILogger<Watcher> _logger;
+    private readonly ILogger<ComparisonEngine> _logger;
     
-    public Watcher(ILogger<Watcher> logger)
+    public ComparisonEngine(ILogger<ComparisonEngine> logger)
     {
         _logger = logger;
     }
 
-    public async Task<WatcherResult> Execute(GroupConfig config)
+    public async Task<ComparisonResult> Execute(ComparisonConfig config)
     {
-        var bag = new ConcurrentBag<Item>();
+        var bag = new ConcurrentBag<ComparisonItem>();
 
         var groupVars = await GetVariables(config.Variables);
         await Parallel.ForEachAsync(config.Items, async (item, _) =>
         {
             if (!ValidateItemConfig(config, item))
             {
-                bag.Add(new Item(item.Name, Error, null, null));
+                bag.Add(new ComparisonItem(item.Name, Error, null, null));
                 return;
             }
 
@@ -148,7 +146,7 @@ public class Watcher
         return lines;
     }
 
-    private bool ValidateItemConfig(GroupConfig config, ItemConfig item)
+    private bool ValidateItemConfig(ComparisonConfig config, ItemConfig item)
     {
         if (item.Actual?.Retriever == null)
         {

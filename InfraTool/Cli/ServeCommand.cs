@@ -7,11 +7,11 @@ namespace InfraTool.Cli;
 
 public class ServeCommand : AsyncCommand
 {
-    private readonly Watcher _watcher;
+    private readonly ComparisonEngine _comparisonEngine;
 
-    public ServeCommand(Watcher watcher)
+    public ServeCommand(ComparisonEngine comparisonEngine)
     {
-        _watcher = watcher;
+        _comparisonEngine = comparisonEngine;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context)
@@ -21,20 +21,20 @@ public class ServeCommand : AsyncCommand
         Program.RegisterServices(builder.Services);
         var app = builder.Build();
 
-        foreach (var groupName in config.Groups.Select(x => x.Name).ToArray())
+        foreach (var comparisonName in config.Comparisons.Select(x => x.Name).ToArray())
         {
-            app.MapGet($"/api/{groupName}", async () =>
+            app.MapGet($"/api/{comparisonName}", async () =>
             {
                 // We are reloading the config on every request so that we don't need to restart the
                 // server after config is changed. If groups are added or deleted, server needs to be
                 // restarted.
                 var localConfig = WatcherConfig.Load();
-                var group = localConfig.Groups.FirstOrDefault(x => x.Name == groupName);
+                var group = localConfig.Comparisons.FirstOrDefault(x => x.Name == comparisonName);
                 if (group == null)
                 {
-                    throw new BadHttpRequestException($"Group not found: {groupName}");
+                    throw new BadHttpRequestException($"Group not found: {comparisonName}");
                 }
-                return await _watcher.Execute(group);
+                return await _comparisonEngine.Execute(group);
             });            
         }
 
