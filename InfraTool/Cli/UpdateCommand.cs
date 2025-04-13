@@ -41,6 +41,11 @@ public class UpdateCommand : SystemdCommandBase
             return 0;
         }
 
+        // We are creating the installer beforehand because there is a problem with bundled deps after we replace the binary
+        SystemDServiceInstaller? installer = null;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            installer = new SystemDServiceInstaller(GetServiceMetadata(), _loggerFactory.CreateLogger<SystemDServiceInstaller>());
+
         string platform = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "osx";
         string arch = RuntimeInformation.OSArchitecture == Architecture.X64 ? "x64" : "arm64";
         var asset = githubVersion.Assets.FirstOrDefault(x => x.Name == $"infratool-{platform}-{arch}.zip");
@@ -83,8 +88,10 @@ public class UpdateCommand : SystemdCommandBase
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             return 0;
-            
-        var installer = new SystemDServiceInstaller(GetServiceMetadata(), _loggerFactory.CreateLogger<SystemDServiceInstaller>());
+
+        if (installer == null)
+            throw new InvalidOperationException("Didn't create sytemd installer beforehand!");
+        
         if (await installer.IsServiceInstalled() && await installer.IsServiceRunning())
         {
             _logger.LogInformation("Systemd service is installed and running, restarting");
@@ -106,7 +113,6 @@ public class UpdateCommand : SystemdCommandBase
 
                 return 1;
             }
-
         }
         
         return 0;
